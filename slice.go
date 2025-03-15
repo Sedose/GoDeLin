@@ -1,4 +1,4 @@
-package fun
+package godelin
 
 import "fmt"
 
@@ -20,17 +20,6 @@ func Any[T any](s []T, fn func(T) bool) bool {
 		}
 	}
 	return false
-}
-
-// AppendToGroup adds the key, value to the given map where each key
-// points to a slice of values
-func AppendToGroup[M ~map[K][]V, K comparable, V any](m M, k K, v V) {
-	lst, ok := m[k]
-	if !ok {
-		lst = make([]V, 0)
-	}
-	lst = append(lst, v)
-	m[k] = lst
 }
 
 // Associate returns a map containing key-value pairs returned by the given

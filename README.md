@@ -1,5 +1,4 @@
-# fun
-[![GoDoc](https://godoc.org/github.com/luraim/fun?status.svg)](https://godoc.org/github.com/luraim/fun)
+# godelin
 
 ### Simple generic utility functions to reduce golang boilerplate
 - Inspired by Kotlin and Rust collection functions
@@ -7,7 +6,7 @@
 - Note: The Go compiler does not currently inline generic callback functions. So please use your judgement while using functions from this library that involve callbacks. Use them when the expressiveness is worth any performance degration compared to handcoded *for loop* boilerplate.
 
 ## List of functions
-- [fun](#fun)
+- [godelin](#godelin)
     - [Simple generic utility functions to reduce golang boilerplate](#simple-generic-utility-functions-to-reduce-golang-boilerplate)
   - [List of functions](#list-of-functions)
     - [All](#all)
@@ -438,4 +437,23 @@ Windowed([]int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, 5, 3)
 ```go
 Zip([]string{"a", "b", "c", "d"}, []int{1, 2, 3})
 // []*Pair[string, int]{{"a", 1}, {"b", 2}, {"c", 3}}
+```
+
+## Helpful Commands
+
+### Run Tests
+Verify that all tests pass:
+```sh
+go test -v ./...
+```
+
+### Build the Project
+Compile the library to ensure there are no errors:
+```sh
+go build ./...
+```
+
+### Format Code
+```sh
+go fmt ./...
 ```

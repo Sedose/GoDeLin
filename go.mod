@@ -1,3 +1,3 @@
-module github.com/luraim/fun
+module github.com/Sedose/godelin
 
-go 1.18
+go 1.22.2

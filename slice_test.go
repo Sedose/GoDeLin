@@ -1,4 +1,4 @@
-package fun
+package godelin
 
 import (
 	"fmt"
@@ -39,24 +39,6 @@ func TestAll(t *testing.T) {
 				t.Errorf("All() = %v, want %v", got, tt.want)
 			}
 		})
-	}
-}
-
-func TestAppendToGroup(t *testing.T) {
-	grp := make(map[string][]int)
-	AppendToGroup(grp, "a", 1)
-	AppendToGroup(grp, "b", 2)
-	AppendToGroup(grp, "a", 10)
-	AppendToGroup(grp, "b", 20)
-	AppendToGroup(grp, "a", 100)
-	AppendToGroup(grp, "b", 200)
-
-	want := map[string][]int{
-		"a": {1, 10, 100},
-		"b": {2, 20, 200},
-	}
-	if !reflect.DeepEqual(grp, want) {
-		t.Errorf("AppendToGroup() = %v, want %v", grp, want)
 	}
 }
 
