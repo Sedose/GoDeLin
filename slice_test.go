@@ -1,6 +1,9 @@
 package godelin
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestSliceAll(t *testing.T) {
 	s := Slice[int]{1, 2, 3, 4, 5}
@@ -79,4 +82,33 @@ func TestAssociate_Overwriting(t *testing.T) {
 			t.Errorf("expected %q for key %d, got %q", v, k, result[k])
 		}
 	}
+}
+
+func TestChunked(t *testing.T) {
+	tests := []struct {
+		input    Slice[int]
+		size     int
+		expected []Slice[int]
+	}{
+		{Slice[int]{1, 2, 3, 4, 5}, 2, []Slice[int]{{1, 2}, {3, 4}, {5}}},
+		{Slice[int]{1, 2, 3, 4, 5, 6}, 3, []Slice[int]{{1, 2, 3}, {4, 5, 6}}},
+		{Slice[int]{1, 2, 3, 4, 5}, 10, []Slice[int]{{1, 2, 3, 4, 5}}},
+		{Slice[int]{}, 3, []Slice[int]{}},
+	}
+
+	for _, test := range tests {
+		result := test.input.Chunked(test.size)
+		if !reflect.DeepEqual(result, test.expected) {
+			t.Errorf("Chunked(%v, %d) = %v; expected %v", test.input, test.size, result, test.expected)
+		}
+	}
+}
+
+func TestChunked_PanicOnInvalidSize(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("Expected panic for size <= 0, but did not panic")
+		}
+	}()
+	Slice[int]{1, 2, 3}.Chunked(0)
 }
