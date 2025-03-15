@@ -5,11 +5,8 @@ import (
 	"testing"
 )
 
-// TestMapExSlice demonstrates storing a slice in a MapEx,
-// appending items to it, and confirming that subsequent calls
-// to GetOrPut for the same key retrieve the existing slice.
-func TestMapExSlice(t *testing.T) {
-	m := NewMapEx[string, []int]()
+func TestMapSlice(t *testing.T) {
+	m := NewMap[string, []int]()
 
 	slice := m.GetOrPut("nums", func() []int { return nil })
 	slice = append(slice, 42)
@@ -25,8 +22,8 @@ func TestMapExSlice(t *testing.T) {
 	}
 }
 
-func TestMapExAppendingMultipleKeys(t *testing.T) {
-	m := NewMapEx[string, []string]()
+func TestMapAppendingMultipleKeys(t *testing.T) {
+	m := NewMap[string, []string]()
 
 	valA := m.GetOrPut("A", func() []string { return []string{} })
 	valA = append(valA, "apple")
@@ -52,8 +49,8 @@ func TestMapExAppendingMultipleKeys(t *testing.T) {
 
 // Below are the basic tests from before, ensuring we also check simpler use cases.
 
-func TestMapExIntString(t *testing.T) {
-	m := NewMapEx[int, string]()
+func TestMapIntString(t *testing.T) {
+	m := NewMap[int, string]()
 
 	calls := 0
 	defValFunc := func() string {
@@ -75,8 +72,8 @@ func TestMapExIntString(t *testing.T) {
 	}
 }
 
-func TestMapExStringInt(t *testing.T) {
-	m := NewMapEx[string, int]()
+func TestMapStringInt(t *testing.T) {
+	m := NewMap[string, int]()
 
 	if v := m.GetOrPut("keyA", func() int { return 123 }); v != 123 {
 		t.Errorf("expected 123, got %v", v)
@@ -86,8 +83,8 @@ func TestMapExStringInt(t *testing.T) {
 	}
 }
 
-func TestMapExMultipleKeys(t *testing.T) {
-	m := NewMapEx[int, int]()
+func TestMapMultipleKeys(t *testing.T) {
+	m := NewMap[int, int]()
 
 	values := []int{10, 20, 30}
 	for i := range values {
@@ -108,8 +105,8 @@ type customKey struct {
 	X, Y int
 }
 
-func TestMapExStructKey(t *testing.T) {
-	m := NewMapEx[customKey, string]()
+func TestMapStructKey(t *testing.T) {
+	m := NewMap[customKey, string]()
 
 	key := customKey{X: 2, Y: 3}
 	res := m.GetOrPut(key, func() string { return "val" })
@@ -122,8 +119,8 @@ func TestMapExStructKey(t *testing.T) {
 	}
 }
 
-func TestMapExFuncAsDefaultValue(t *testing.T) {
-	m := NewMapEx[int, func() string]()
+func TestMapFuncAsDefaultValue(t *testing.T) {
+	m := NewMap[int, func() string]()
 	defFunc := func() func() string {
 		return func() string { return "result" }
 	}
@@ -139,8 +136,8 @@ func TestMapExFuncAsDefaultValue(t *testing.T) {
 	}
 }
 
-func TestMapExDifferentCalls(t *testing.T) {
-	m := NewMapEx[string, int]()
+func TestMapDifferentCalls(t *testing.T) {
+	m := NewMap[string, int]()
 	call1 := m.GetOrPut("A", func() int { return 1 })
 	call2 := m.GetOrPut("A", func() int { return 2 })
 	if call1 != 1 || call2 != 1 {
@@ -148,8 +145,8 @@ func TestMapExDifferentCalls(t *testing.T) {
 	}
 }
 
-func TestMapExIncrement(t *testing.T) {
-	m := NewMapEx[string, int]()
+func TestMapIncrement(t *testing.T) {
+	m := NewMap[string, int]()
 	for i := 0; i < 5; i++ {
 		m.GetOrPut("counter", func() int { return 0 })
 		m.data["counter"]++
@@ -159,8 +156,8 @@ func TestMapExIncrement(t *testing.T) {
 	}
 }
 
-func TestMapExGetOrPutWithStringConversion(t *testing.T) {
-	m := NewMapEx[int, string]()
+func TestMapGetOrPutWithStringConversion(t *testing.T) {
+	m := NewMap[int, string]()
 	for i := 0; i < 3; i++ {
 		val := m.GetOrPut(i, func() string { return "val" + strconv.Itoa(i) })
 		if val != "val"+strconv.Itoa(i) {
