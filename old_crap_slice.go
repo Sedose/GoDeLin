@@ -2,37 +2,7 @@ package godelin
 
 //
 //import "fmt"
-//
-//// All returns true if all elements return true for given predicate
-//func All[T any](s []T, fn func(T) bool) bool {
-//	for _, e := range s {
-//		if !fn(e) {
-//			return false
-//		}
-//	}
-//	return true
-//}
-//
-//// Any returns true if at least one element returns true for given predicate
-//func Any[T any](s []T, fn func(T) bool) bool {
-//	for _, e := range s {
-//		if fn(e) {
-//			return true
-//		}
-//	}
-//	return false
-//}
-//
-//// Associate returns a map containing key-value pairs returned by the given
-//// function applied to the elements of the given slice
-//func Associate[T, V any, K comparable](s []T, fn func(T) (K, V)) map[K]V {
-//	ret := make(map[K]V)
-//	for _, e := range s {
-//		k, v := fn(e)
-//		ret[k] = v
-//	}
-//	return ret
-//}
+
 //
 //// Chunked splits the slice into a slice of slices, each not exceeding given size
 //// The last slice might have fewer elements than the given size
