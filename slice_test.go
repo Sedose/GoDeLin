@@ -890,40 +890,44 @@ func TestMapIndexed(t *testing.T) {
 }
 
 func TestPartition(t *testing.T) {
-	type person struct {
-		name string
-		age  int
-	}
-	type args struct {
-		s  []*person
-		fn func(*person) bool
-	}
-	tom := &person{"Tom", 18}
-	andy := &person{"Andy", 32}
-	sarah := &person{"Sarah", 22}
 	tests := []struct {
-		name  string
-		args  args
-		want  []*person
-		want1 []*person
+		name          string
+		input         []int
+		predicate     func(int) bool
+		expectedTrue  []int
+		expectedFalse []int
 	}{
-		{"partition",
-			args{
-				[]*person{tom, andy, sarah},
-				func(p *person) bool { return p.age < 30 },
-			},
-			[]*person{tom, sarah},
-			[]*person{andy},
+		{
+			name:          "Even and odd numbers",
+			input:         []int{1, 2, 3, 4, 5, 6},
+			predicate:     func(n int) bool { return n%2 == 0 },
+			expectedTrue:  []int{2, 4, 6},
+			expectedFalse: []int{1, 3, 5},
+		},
+		{
+			name:          "Greater than 3",
+			input:         []int{1, 2, 3, 4, 5},
+			predicate:     func(n int) bool { return n > 3 },
+			expectedTrue:  []int{4, 5},
+			expectedFalse: []int{1, 2, 3},
+		},
+		{
+			name:          "Empty slice",
+			input:         []int{},
+			predicate:     func(n int) bool { return n > 0 },
+			expectedTrue:  []int{},
+			expectedFalse: []int{},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := Partition(tt.args.s, tt.args.fn)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Partition() got = %v, want %v", got, tt.want)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			trueResult, falseResult := Partition(test.input, test.predicate)
+			if !reflect.DeepEqual(trueResult, test.expectedTrue) {
+				t.Errorf("expected trueList %v, got %v", test.expectedTrue, trueResult)
 			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("Partition() got1 = %v, want %v", got1, tt.want1)
+			if !reflect.DeepEqual(falseResult, test.expectedFalse) {
+				t.Errorf("expected falseList %v, got %v", test.expectedFalse, falseResult)
 			}
 		})
 	}
