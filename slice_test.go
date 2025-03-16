@@ -60,6 +60,77 @@ func TestAppendToGroup(t *testing.T) {
 	}
 }
 
+// Test when key is already present in the map
+func TestGetOrPut_ExistingKey(t *testing.T) {
+	m := map[string]int{"a": 42}
+
+	got := GetOrPut(m, "a", func() int { return 100 })
+	expected := 42
+
+	if got != expected {
+		t.Errorf("GetOrPut() returned %v, expected %v", got, expected)
+	}
+}
+
+// Test when key is missing, default value should be inserted
+func TestGetOrPut_MissingKey(t *testing.T) {
+	m := map[string]int{}
+
+	got := GetOrPut(m, "b", func() int { return 100 })
+	expected := 100
+
+	if got != expected {
+		t.Errorf("GetOrPut() returned %v, expected %v", got, expected)
+	}
+
+	// Check if the key was actually inserted
+	if m["b"] != 100 {
+		t.Errorf("GetOrPut() did not insert the expected value into the map")
+	}
+}
+
+// Test GetOrPut with slice values
+func TestGetOrPut_SliceValue(t *testing.T) {
+	m := map[string][]int{}
+
+	got := GetOrPut(m, "c", func() []int { return []int{1, 2, 3} })
+	expected := []int{1, 2, 3}
+
+	if len(got) != len(expected) {
+		t.Errorf("GetOrPut() returned slice of length %d, expected %d", len(got), len(expected))
+	}
+
+	for i := range got {
+		if got[i] != expected[i] {
+			t.Errorf("GetOrPut() returned %v, expected %v", got, expected)
+		}
+	}
+
+	// Check if map was updated correctly
+	if len(m["c"]) != 3 {
+		t.Errorf("GetOrPut() did not insert the expected slice into the map")
+	}
+}
+
+func TestGetOrPut_StructValue(t *testing.T) {
+	type TestStruct struct {
+		Value string
+	}
+	m := map[int]TestStruct{}
+
+	got := GetOrPut(m, 10, func() TestStruct { return TestStruct{Value: "Hello"} })
+	expected := TestStruct{Value: "Hello"}
+
+	if got != expected {
+		t.Errorf("GetOrPut() returned %v, expected %v", got, expected)
+	}
+
+	// Check if map was updated
+	if m[10] != expected {
+		t.Errorf("GetOrPut() did not insert the expected struct into the map")
+	}
+}
+
 func TestAny(t *testing.T) {
 	type args struct {
 		elems []int

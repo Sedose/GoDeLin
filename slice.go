@@ -7,17 +7,14 @@ import (
 
 // All returns true if all elements return true for given predicate
 func All[T any](s []T, fn func(T) bool) bool {
-	return slices.ContainsFunc(s, func(e T) bool { return !fn(e) }) == false
+	return !slices.ContainsFunc(s, func(e T) bool {
+		return !fn(e)
+	})
 }
 
 // Any returns true if at least one element returns true for given predicate
 func Any[T any](s []T, fn func(T) bool) bool {
-	for _, e := range s {
-		if fn(e) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(s, fn)
 }
 
 // AppendToGroup adds the key, value to the given map where each key
@@ -29,6 +26,16 @@ func AppendToGroup[M ~map[K][]V, K comparable, V any](m M, k K, v V) {
 	}
 	lst = append(lst, v)
 	m[k] = lst
+}
+
+// GetOrPut retrieves the value from the map or initializes it if absent
+func GetOrPut[K comparable, V any](m map[K]V, key K, defaultValue func() V) V {
+	if val, ok := m[key]; ok {
+		return val
+	}
+	val := defaultValue()
+	m[key] = val
+	return val
 }
 
 // Associate returns a map containing key-value pairs returned by the given
