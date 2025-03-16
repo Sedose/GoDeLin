@@ -768,7 +768,7 @@ func TestItems(t *testing.T) {
 		return got[i].Fst < got[j].Fst
 	})
 
-	if got := Items(m); !reflect.DeepEqual(got, want) {
+	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Items() = %v, want %v", got, want)
 	}
 }
