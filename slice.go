@@ -348,17 +348,17 @@ func MapIndexed[T1, T2 any](s []T1, fn func(int, T1) T2) []T2 {
 // Partition returns two slices where the first slice contains elements for
 // which the predicate returned true and the second slice contains elements for
 // which it returned false.
-func Partition[T any](s []T, fn func(T) bool) ([]T, []T) {
-	trueList := make([]T, 0)
-	falseList := make([]T, 0)
+func Partition[T any](s []T, predicate func(T) bool) ([]T, []T) {
+	first := make([]T, 0)
+	second := make([]T, 0)
 	for _, e := range s {
-		if fn(e) {
-			trueList = append(trueList, e)
+		if predicate(e) {
+			first = append(first, e)
 		} else {
-			falseList = append(falseList, e)
+			second = append(second, e)
 		}
 	}
-	return trueList, falseList
+	return first, second
 }
 
 // Reduce accumulates the values starting with the first element and applying the
