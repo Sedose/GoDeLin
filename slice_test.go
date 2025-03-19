@@ -42,24 +42,6 @@ func TestAll(t *testing.T) {
 	}
 }
 
-func TestAppendToGroup(t *testing.T) {
-	grp := make(map[string][]int)
-	AppendToGroup(grp, "a", 1)
-	AppendToGroup(grp, "b", 2)
-	AppendToGroup(grp, "a", 10)
-	AppendToGroup(grp, "b", 20)
-	AppendToGroup(grp, "a", 100)
-	AppendToGroup(grp, "b", 200)
-
-	want := map[string][]int{
-		"a": {1, 10, 100},
-		"b": {2, 20, 200},
-	}
-	if !reflect.DeepEqual(grp, want) {
-		t.Errorf("AppendToGroup() = %v, want %v", grp, want)
-	}
-}
-
 // Test when key is already present in the map
 func TestGetOrPut_ExistingKey(t *testing.T) {
 	m := map[string]int{"a": 42}
@@ -195,35 +177,45 @@ func TestFilter(t *testing.T) {
 	}
 }
 
-func TestAssociate(t *testing.T) {
-	type args struct {
-		elems []int
-		fn    func(int) (string, int)
+func TestAssociate_StringGrouping(t *testing.T) {
+	// Group strings by their first letter.
+	fruits := []string{"apple", "apricot", "banana", "avocado", "blueberry"}
+	result := Associate(fruits, func(fruit string) (string, string) {
+		return fruit[:1], fruit
+	})
+	expected := map[string][]string{
+		"a": {"apple", "apricot", "avocado"},
+		"b": {"banana", "blueberry"},
 	}
-	tests := []struct {
-		name string
-		args args
-		want map[string]int
-	}{
-		{"associate strings with ints",
-			args{
-				[]int{1, 2, 3, 4},
-				func(i int) (string, int) {
-					return fmt.Sprintf("M%d", i), i * 10
-				},
-			},
-			map[string]int{"M1": 10, "M2": 20, "M3": 30, "M4": 40},
-		},
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Associate() = %v, want %v", result, expected)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Associate(tt.args.elems, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("Associate() = %v, want %v", got, tt.want)
-			}
-		})
+}
+
+func TestAssociate_IntGrouping(t *testing.T) {
+	// Group integers by even/odd.
+	numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	result := Associate(numbers, func(n int) (bool, int) {
+		return n%2 == 0, n
+	})
+	expected := map[bool][]int{
+		false: {1, 3, 5, 7, 9},
+		true:  {2, 4, 6, 8, 10},
+	}
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Associate() with ints = %v, want %v", result, expected)
+	}
+}
+
+func TestAssociate_EmptySlice(t *testing.T) {
+	// Edge case: empty slice.
+	var empty []string
+	result := Associate(empty, func(s string) (string, string) {
+		return s, s
+	})
+	expected := map[string][]string{}
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Associate() with empty slice = %v, want %v", result, expected)
 	}
 }
 

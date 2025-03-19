@@ -1,52 +1,63 @@
 package godelin
 
-import (
-	"fmt"
-	"slices"
-)
+import "fmt"
 
-// All returns true if all elements return true for given predicate
-func All[T any](s []T, fn func(T) bool) bool {
-	return !slices.ContainsFunc(s, func(e T) bool {
-		return !fn(e)
-	})
-}
-
-// Any returns true if at least one element returns true for given predicate
-func Any[T any](s []T, fn func(T) bool) bool {
-	return slices.ContainsFunc(s, fn)
-}
-
-// AppendToGroup adds the key, value to the given map where each key
-// points to a slice of values
-func AppendToGroup[M ~map[K][]V, K comparable, V any](m M, k K, v V) {
-	lst, ok := m[k]
-	if !ok {
-		lst = make([]V, 0)
+// All returns true if all elements in the slice satisfy the given predicate.
+// If the slice is empty, it returns true (vacuous truth).
+func All[T any](elements []T, predicate func(T) bool) bool {
+	for _, element := range elements {
+		if !predicate(element) {
+			return false
+		}
 	}
-	lst = append(lst, v)
-	m[k] = lst
+	return true
 }
 
-// GetOrPut retrieves the value from the map or initializes it if absent
-func GetOrPut[K comparable, V any](m map[K]V, key K, defaultValue func() V) V {
-	if val, ok := m[key]; ok {
-		return val
+// Any returns true if at least one element in the slice satisfies the given predicate.
+// If the slice is empty, it returns false.
+func Any[T any](elements []T, predicate func(T) bool) bool {
+	for _, element := range elements {
+		if predicate(element) {
+			return true
+		}
 	}
-	val := defaultValue()
-	m[key] = val
-	return val
+	return false
 }
 
-// Associate returns a map containing key-value pairs returned by the given
-// function applied to the elements of the given slice
-func Associate[T, V any, K comparable](s []T, fn func(T) (K, V)) map[K]V {
-	ret := make(map[K]V)
-	for _, e := range s {
-		k, v := fn(e)
-		ret[k] = v
+// GetOrPut returns the value associated with the given key in the map.
+// If the key does not exist, it calls `defaultValue()` to generate a new value,
+// stores it in the map, and then returns the newly stored value.
+func GetOrPut[K comparable, V any](table map[K]V, key K, computeValue func() V) V {
+	if value, exists := table[key]; exists {
+		return value
 	}
-	return ret
+	table[key] = computeValue()
+	return table[key]
+}
+
+// Associate transforms a slice into a map by applying a transform function to each element.
+// The transform function takes an item and returns a key-value pair.
+// For duplicate keys, all values are accumulated into a slice associated with that key.
+//
+// Example usage:
+//
+//	fruits := []string{"apple", "apricot", "banana", "avocado"}
+//	groups := Associate(fruits, func(fruit string) (string, string) {
+//		return fruit[:1], fruit
+//	})
+//	// groups will be: map[string][]string{
+//	//	  "a": {"apple", "apricot", "avocado"},
+//	//	  "b": {"banana"},
+//	// }
+//
+// Complexity: O(n), where n is the number of items.
+func Associate[T any, K comparable, V any](items []T, transform func(T) (K, V)) map[K][]V {
+	resultMap := make(map[K][]V, len(items))
+	for _, item := range items {
+		key, value := transform(item)
+		resultMap[key] = append(resultMap[key], value)
+	}
+	return resultMap
 }
 
 // Chunked splits the slice into a slice of slices, each not exceeding given size
