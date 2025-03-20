@@ -180,7 +180,7 @@ func TestFilter(t *testing.T) {
 func TestAssociate_StringGrouping(t *testing.T) {
 	// Group strings by their first letter.
 	fruits := []string{"apple", "apricot", "banana", "avocado", "blueberry"}
-	result := Associate(fruits, func(fruit string) (string, string) {
+	result := GroupBy(fruits, func(fruit string) (string, string) {
 		return fruit[:1], fruit
 	})
 	expected := map[string][]string{
@@ -195,7 +195,7 @@ func TestAssociate_StringGrouping(t *testing.T) {
 func TestAssociate_IntGrouping(t *testing.T) {
 	// Group integers by even/odd.
 	numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	result := Associate(numbers, func(n int) (bool, int) {
+	result := GroupBy(numbers, func(n int) (bool, int) {
 		return n%2 == 0, n
 	})
 	expected := map[bool][]int{
@@ -210,7 +210,7 @@ func TestAssociate_IntGrouping(t *testing.T) {
 func TestAssociate_EmptySlice(t *testing.T) {
 	// Edge case: empty slice.
 	var empty []string
-	result := Associate(empty, func(s string) (string, string) {
+	result := GroupBy(empty, func(s string) (string, string) {
 		return s, s
 	})
 	expected := map[string][]string{}

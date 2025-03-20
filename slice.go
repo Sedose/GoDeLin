@@ -35,7 +35,7 @@ func GetOrPut[K comparable, V any](table map[K]V, key K, computeValue func() V) 
 	return table[key]
 }
 
-// Associate transforms a slice into a map by applying a transform function to each element.
+// GroupBy transforms a slice into a map by applying a transform function to each element.
 // The transform function takes an item and returns a key-value pair.
 // For duplicate keys, all values are accumulated into a slice associated with that key.
 //
@@ -51,7 +51,7 @@ func GetOrPut[K comparable, V any](table map[K]V, key K, computeValue func() V) 
 //	// }
 //
 // Complexity: O(n), where n is the number of items.
-func Associate[T any, K comparable, V any](items []T, transform func(T) (K, V)) map[K][]V {
+func GroupBy[T any, K comparable, V any](items []T, transform func(T) (K, V)) map[K][]V {
 	resultMap := make(map[K][]V, len(items))
 	for _, item := range items {
 		key, value := transform(item)
@@ -60,25 +60,37 @@ func Associate[T any, K comparable, V any](items []T, transform func(T) (K, V)) 
 	return resultMap
 }
 
-// Chunked splits the slice into a slice of slices, each not exceeding given size
-// The last slice might have fewer elements than the given size
-func Chunked[T any](s []T, chunkSize int) [][]T {
-	sz := len(s)
-	ret := make([][]T, 0, sz/chunkSize+2)
-	var sub []T
-	for i := 0; i < sz; i++ {
-		if i%chunkSize == 0 {
-			if len(sub) > 0 {
-				ret = append(ret, sub)
-			}
-			sub = make([]T, 0, chunkSize)
+// Chunked splits the input slice into multiple slices, each containing at most chunkSize elements.
+// The last chunk may contain fewer elements if the input size is not evenly divisible by chunkSize.
+//
+// chunkSize must be positive; otherwise, the function panics.
+//
+// Example:
+//
+//	input := []int{1, 2, 3, 4, 5}
+//	chunks := Chunked(input, 2)
+//	// chunks == [][]int{{1, 2}, {3, 4}, {5}}
+//
+// Parameters:
+//   - input: the slice to be split
+//   - chunkSize: the maximum number of elements in each chunk
+//
+// Returns:
+//   - A slice of slices, where each inner slice has at most chunkSize elements.
+func Chunked[T any](input []T, chunkSize int) [][]T {
+	if chunkSize <= 0 {
+		panic("chunkSize must be positive")
+	}
+	totalItems := len(input)
+	result := make([][]T, 0, (totalItems+chunkSize-1)/chunkSize)
+	for start := 0; start < totalItems; start += chunkSize {
+		end := start + chunkSize
+		if end > totalItems {
+			end = totalItems
 		}
-		sub = append(sub, s[i])
+		result = append(result, input[start:end])
 	}
-	if len(sub) > 0 {
-		ret = append(ret, sub)
-	}
-	return ret
+	return result
 }
 
 func ChunkedBy[T any](s []T, fn func(T, T) bool) [][]T {
@@ -309,22 +321,22 @@ func GetOrInsert[M ~map[K]V, K comparable, V any](m M, k K, fn func(K) V) V {
 
 // GroupBy returns a map containing key to list of values
 // returned by the given function applied to the elements of the given slice
-func GroupBy[T, V any, K comparable](
-	s []T,
-	fn func(T) (K, V),
-) map[K][]V {
-	ret := make(map[K][]V)
-	for _, e := range s {
-		k, v := fn(e)
-		lst, ok := ret[k]
-		if !ok {
-			lst = make([]V, 0)
-		}
-		lst = append(lst, v)
-		ret[k] = lst
-	}
-	return ret
-}
+//func GroupBy[T, V any, K comparable](
+//	s []T,
+//	fn func(T) (K, V),
+//) map[K][]V {
+//	ret := make(map[K][]V)
+//	for _, e := range s {
+//		k, v := fn(e)
+//		lst, ok := ret[k]
+//		if !ok {
+//			lst = make([]V, 0)
+//		}
+//		lst = append(lst, v)
+//		ret[k] = lst
+//	}
+//	return ret
+//}
 
 // Items returns the (key, value) pairs of the given map as a slice
 func Items[M ~map[K]V, K comparable, V any](m M) []*Pair[K, V] {
