@@ -131,20 +131,37 @@ func ChunkedBy[T any](inputSlice []T, groupingFn func(T, T) bool) [][]T {
 	return resultChunks
 }
 
-// Distinct returns a slice containing only distinct elements from the given slice
-// Elements will retain their original order.
-func Distinct[T comparable](s []T) []T {
-	m := make(map[T]bool)
-	ret := make([]T, 0)
-	for _, e := range s {
-		_, ok := m[e]
-		if ok {
+// Distinct returns a new slice containing only the distinct elements from the provided slice items.
+// The function preserves the order of the first occurrence of each element.
+// It iterates over the slice and uses a preallocated map to track seen elements, ensuring O(n)
+// time complexity while minimizing memory allocations.
+//
+// Example:
+//
+//	input := []int{3, 1, 2, 3, 2, 1}
+//	output := Distinct(input)
+//	// output is []int{3, 1, 2}
+//
+// Parameters:
+//   - items: A slice of elements of type T, where T is a comparable type.
+//
+// Returns:
+//   - A slice containing distinct elements in the order of their first appearance.
+func Distinct[T comparable](items []T) []T {
+	if len(items) < 1 {
+		return nil // Return early for empty input
+	}
+	seen := make(map[T]struct{}, len(items)) // Uses struct{} to save memory
+	result := make([]T, 0, len(items))
+
+	for _, elem := range items {
+		if _, exists := seen[elem]; exists {
 			continue
 		}
-		m[e] = true
-		ret = append(ret, e)
+		seen[elem] = struct{}{}
+		result = append(result, elem)
 	}
-	return ret
+	return result
 }
 
 // DistinctBy returns a slice containing only distinct elements from the
