@@ -93,29 +93,42 @@ func Chunked[T any](input []T, chunkSize int) [][]T {
 	return result
 }
 
-func ChunkedBy[T any](s []T, fn func(T, T) bool) [][]T {
-	ret := make([][]T, 0)
-	switch len(s) {
-	case 0:
-		return ret
-	case 1:
-		ret = append(ret, []T{s[0]})
-		return ret
+// ChunkedBy splits the given slice into contiguous sub-slices. Each sub-slice
+// contains consecutive elements for which the grouping function returns true
+// when comparing the last element of the current group with the next element.
+// When the function returns false, a new chunk is started.
+//
+// It pre-allocates the output slice with an estimated capacity (a heuristic of half
+// the length of the input slice) to reduce reallocations in common cases. If the input
+// slice is empty, it returns nil. For a single-element slice, it returns a slice
+// containing one sub-slice with that element.
+//
+// Example:
+//
+//	groups := ChunkedBy([]int{1, 2, 3, 2, 3, 4}, func(prev, curr int) bool {
+//	    return curr == prev+1
+//	})
+//	// groups => [][]int{ {1,2,3}, {2,3,4} }
+func ChunkedBy[T any](inputSlice []T, groupingFn func(T, T) bool) [][]T {
+	if len(inputSlice) == 0 {
+		return nil
 	}
-	var currentSubList = []T{s[0]}
-	for _, e := range s[1:] {
-		if fn(currentSubList[len(currentSubList)-1], e) {
-			currentSubList = append(currentSubList, e)
+	// Use a heuristic for capacity; worst-case every element starts a new chunk.
+	estimatedCapacity := len(inputSlice) / 2
+	resultChunks := make([][]T, 0, estimatedCapacity)
+	currentChunk := make([]T, 0, len(inputSlice))
+	currentChunk = append(currentChunk, inputSlice[0])
+	for _, currentElement := range inputSlice[1:] {
+		lastElement := currentChunk[len(currentChunk)-1]
+		if groupingFn(lastElement, currentElement) {
+			currentChunk = append(currentChunk, currentElement)
 		} else {
-			// save current sub list and start a new one
-			ret = append(ret, currentSubList)
-			currentSubList = []T{e}
+			resultChunks = append(resultChunks, currentChunk)
+			currentChunk = []T{currentElement}
 		}
 	}
-	if len(currentSubList) > 0 {
-		ret = append(ret, currentSubList)
-	}
-	return ret
+	resultChunks = append(resultChunks, currentChunk)
+	return resultChunks
 }
 
 // Distinct returns a slice containing only distinct elements from the given slice
