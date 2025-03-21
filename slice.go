@@ -164,22 +164,32 @@ func Distinct[T comparable](items []T) []T {
 	return result
 }
 
-// DistinctBy returns a slice containing only distinct elements from the
-// given slice as distinguished by the given selector function
-// Elements will retain their original order.
-func DistinctBy[T any, K comparable](s []T, fn func(T) K) []T {
-	m := make(map[K]bool)
-	ret := make([]T, 0)
-	for _, e := range s {
-		k := fn(e)
-		_, ok := m[k]
-		if ok {
-			continue
-		}
-		m[k] = true
-		ret = append(ret, e)
+// DistinctBy returns a new slice containing only distinct elements from the given slice,
+// where uniqueness is determined by the selector function keySelector.
+// The original order of elements is preserved.
+//
+// Example:
+//
+//	users := []User{{ID: 1}, {ID: 2}, {ID: 1}}
+//	uniqueUsers := UniqueBy(users, func(u User) int { return u.ID })
+//	// uniqueUsers == []User{{ID: 1}, {ID: 2}}
+func DistinctBy[T any, K comparable](elements []T, keySelector func(T) K) []T {
+	if len(elements) == 0 {
+		return nil
 	}
-	return ret
+
+	seenKeys := make(map[K]struct{}, len(elements))
+	result := make([]T, 0, len(elements))
+
+	for _, elem := range elements {
+		key := keySelector(elem)
+		if _, exists := seenKeys[key]; !exists {
+			seenKeys[key] = struct{}{}
+			result = append(result, elem)
+		}
+	}
+
+	return result
 }
 
 // Drop returns a slice containing all elements except the first n
