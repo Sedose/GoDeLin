@@ -2,10 +2,8 @@ package godelin
 
 import "fmt"
 
-// All returns true if all elements in the slice satisfy the given predicate.
-// If the slice is empty, it returns true (vacuous truth).
-func All[T any](elements []T, predicate func(T) bool) bool {
-	for _, element := range elements {
+func All[T any](inputSlice []T, predicate func(T) bool) bool {
+	for _, element := range inputSlice {
 		if !predicate(element) {
 			return false
 		}
@@ -13,10 +11,8 @@ func All[T any](elements []T, predicate func(T) bool) bool {
 	return true
 }
 
-// Any returns true if at least one element in the slice satisfies the given predicate.
-// If the slice is empty, it returns false.
-func Any[T any](elements []T, predicate func(T) bool) bool {
-	for _, element := range elements {
+func Any[T any](inputSlice []T, predicate func(T) bool) bool {
+	for _, element := range inputSlice {
 		if predicate(element) {
 			return true
 		}
@@ -24,9 +20,6 @@ func Any[T any](elements []T, predicate func(T) bool) bool {
 	return false
 }
 
-// GetOrPut returns the value associated with the given key in the map.
-// If the key does not exist, it calls `defaultValue()` to generate a new value,
-// stores it in the map, and then returns the newly stored value.
 func GetOrPut[K comparable, V any](table map[K]V, key K, computeValue func() V) V {
 	if value, exists := table[key]; exists {
 		return value
@@ -35,85 +28,35 @@ func GetOrPut[K comparable, V any](table map[K]V, key K, computeValue func() V) 
 	return table[key]
 }
 
-// GroupBy transforms a slice into a map by applying a transform function to each element.
-// The transform function takes an item and returns a key-value pair.
-// For duplicate keys, all values are accumulated into a slice associated with that key.
-//
-// Example usage:
-//
-//	fruits := []string{"apple", "apricot", "banana", "avocado"}
-//	groups := Associate(fruits, func(fruit string) (string, string) {
-//		return fruit[:1], fruit
-//	})
-//	// groups will be: map[string][]string{
-//	//	  "a": {"apple", "apricot", "avocado"},
-//	//	  "b": {"banana"},
-//	// }
-//
-// Complexity: O(n), where n is the number of items.
-func GroupBy[T any, K comparable, V any](items []T, transform func(T) (K, V)) map[K][]V {
-	resultMap := make(map[K][]V, len(items))
-	for _, item := range items {
-		key, value := transform(item)
+func GroupBy[T any, K comparable, V any](inputSlice []T, transform func(T) (K, V)) map[K][]V {
+	resultMap := make(map[K][]V, len(inputSlice))
+	for _, element := range inputSlice {
+		key, value := transform(element)
 		resultMap[key] = append(resultMap[key], value)
 	}
 	return resultMap
 }
 
-// Chunked splits the input slice into multiple slices, each containing at most chunkSize elements.
-// The last chunk may contain fewer elements if the input size is not evenly divisible by chunkSize.
-//
-// chunkSize must be positive; otherwise, the function panics.
-//
-// Example:
-//
-//	input := []int{1, 2, 3, 4, 5}
-//	chunks := Chunked(input, 2)
-//	// chunks == [][]int{{1, 2}, {3, 4}, {5}}
-//
-// Parameters:
-//   - input: the slice to be split
-//   - chunkSize: the maximum number of elements in each chunk
-//
-// Returns:
-//   - A slice of slices, where each inner slice has at most chunkSize elements.
-func Chunked[T any](input []T, chunkSize int) [][]T {
+func Chunked[T any](inputSlice []T, chunkSize int) [][]T {
 	if chunkSize <= 0 {
 		panic("chunkSize must be positive")
 	}
-	totalItems := len(input)
+	totalItems := len(inputSlice)
 	result := make([][]T, 0, (totalItems+chunkSize-1)/chunkSize)
 	for start := 0; start < totalItems; start += chunkSize {
 		end := start + chunkSize
 		if end > totalItems {
 			end = totalItems
 		}
-		result = append(result, input[start:end])
+		result = append(result, inputSlice[start:end])
 	}
 	return result
 }
 
-// ChunkedBy splits the given slice into contiguous sub-slices. Each sub-slice
-// contains consecutive elements for which the grouping function returns true
-// when comparing the last element of the current group with the next element.
-// When the function returns false, a new chunk is started.
-//
-// It pre-allocates the output slice with an estimated capacity (a heuristic of half
-// the length of the input slice) to reduce reallocations in common cases. If the input
-// slice is empty, it returns nil. For a single-element slice, it returns a slice
-// containing one sub-slice with that element.
-//
-// Example:
-//
-//	groups := ChunkedBy([]int{1, 2, 3, 2, 3, 4}, func(prev, curr int) bool {
-//	    return curr == prev+1
-//	})
-//	// groups => [][]int{ {1,2,3}, {2,3,4} }
 func ChunkedBy[T any](inputSlice []T, groupingFn func(T, T) bool) [][]T {
 	if len(inputSlice) == 0 {
 		return nil
 	}
-	// Use a heuristic for capacity; worst-case every element starts a new chunk.
 	estimatedCapacity := len(inputSlice) / 2
 	resultChunks := make([][]T, 0, estimatedCapacity)
 	currentChunk := make([]T, 0, len(inputSlice))
@@ -131,99 +74,69 @@ func ChunkedBy[T any](inputSlice []T, groupingFn func(T, T) bool) [][]T {
 	return resultChunks
 }
 
-// Distinct returns a new slice containing only the distinct elements from the provided slice items.
-// The function preserves the order of the first occurrence of each element.
-// It iterates over the slice and uses a preallocated map to track seen elements, ensuring O(n)
-// time complexity while minimizing memory allocations.
-//
-// Example:
-//
-//	input := []int{3, 1, 2, 3, 2, 1}
-//	output := Distinct(input)
-//	// output is []int{3, 1, 2}
-//
-// Parameters:
-//   - items: A slice of elements of type T, where T is a comparable type.
-//
-// Returns:
-//   - A slice containing distinct elements in the order of their first appearance.
-func Distinct[T comparable](items []T) []T {
-	if len(items) < 1 {
-		return nil // Return early for empty input
+func Distinct[T comparable](inputSlice []T) []T {
+	if len(inputSlice) < 1 {
+		return nil
 	}
-	seen := make(map[T]struct{}, len(items)) // Uses struct{} to save memory
-	result := make([]T, 0, len(items))
+	seen := make(map[T]struct{}, len(inputSlice))
+	result := make([]T, 0, len(inputSlice))
 
-	for _, elem := range items {
-		if _, exists := seen[elem]; exists {
+	for _, element := range inputSlice {
+		if _, exists := seen[element]; exists {
 			continue
 		}
-		seen[elem] = struct{}{}
-		result = append(result, elem)
+		seen[element] = struct{}{}
+		result = append(result, element)
 	}
 	return result
 }
 
-// DistinctBy returns a new slice containing only distinct elements from the given slice,
-// where uniqueness is determined by the selector function keySelector.
-// The original order of elements is preserved.
-//
-// Example:
-//
-//	users := []User{{ID: 1}, {ID: 2}, {ID: 1}}
-//	uniqueUsers := UniqueBy(users, func(u User) int { return u.ID })
-//	// uniqueUsers == []User{{ID: 1}, {ID: 2}}
-func DistinctBy[T any, K comparable](elements []T, keySelector func(T) K) []T {
-	if len(elements) == 0 {
+func DistinctBy[T any, K comparable](inputSlice []T, keySelector func(T) K) []T {
+	if len(inputSlice) == 0 {
 		return nil
 	}
 
-	seenKeys := make(map[K]struct{}, len(elements))
-	result := make([]T, 0, len(elements))
+	seenKeys := make(map[K]struct{}, len(inputSlice))
+	result := make([]T, 0, len(inputSlice))
 
-	for _, elem := range elements {
-		key := keySelector(elem)
+	for _, element := range inputSlice {
+		key := keySelector(element)
 		if _, exists := seenKeys[key]; !exists {
 			seenKeys[key] = struct{}{}
-			result = append(result, elem)
+			result = append(result, element)
 		}
 	}
 
 	return result
 }
 
-// Drop returns a slice containing all elements except the first n elements.
-func Drop[T any](elements []T, n int) []T {
-	if n <= 0 || len(elements) == 0 {
-		return elements
+func Drop[T any](inputSlice []T, numToDrop int) []T {
+	if numToDrop <= 0 || len(inputSlice) == 0 {
+		return inputSlice
 	}
-	if n >= len(elements) {
+	if numToDrop >= len(inputSlice) {
 		return nil
 	}
-	return elements[n:]
+	return inputSlice[numToDrop:]
 }
 
-// DropLast returns a slice containing all elements except the last n
-func DropLast[T any](s []T, n int) []T {
-	if n >= len(s) {
-		return make([]T, 0)
+func DropLast[T any](inputSlice []T, numToDrop int) []T {
+	if numToDrop <= 0 || len(inputSlice) == 0 {
+		return inputSlice
 	}
-	return s[:len(s)-n]
+	if numToDrop >= len(inputSlice) {
+		return nil
+	}
+	return inputSlice[:len(inputSlice)-numToDrop]
 }
 
-// DropLastWhile returns a slice containing all elements except the last elements
-// that satisfy the given predicate
-func DropLastWhile[T any](s []T, fn func(T) bool) []T {
-	if len(s) == 0 {
-		return s
-	}
-	i := len(s) - 1
-	for ; i >= 0; i-- {
-		if !fn(s[i]) {
-			break
+func DropLastWhile[T any](inputSlice []T, predicate func(T) bool) []T {
+	for i := len(inputSlice) - 1; i >= 0; i-- {
+		if !predicate(inputSlice[i]) {
+			return inputSlice[:i+1]
 		}
 	}
-	return s[:i+1]
+	return []T{}
 }
 
 // DropWhile returns a slice containing all elements except the first elements

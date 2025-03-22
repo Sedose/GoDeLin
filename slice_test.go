@@ -420,106 +420,104 @@ func TestDrop(t *testing.T) {
 }
 
 func TestDropLast(t *testing.T) {
-	type args struct {
-		s []int
-		n int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
+	testCases := []struct {
+		name      string
+		input     []int
+		numToDrop int
+		expected  []int
 	}{
-		{"drop less than slice length",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				4,
-			},
-			[]int{1, 2, 3, 4, 5},
+		{
+			name:      "drop fewer than slice length",
+			input:     []int{1, 2, 3, 4, 5},
+			numToDrop: 2,
+			expected:  []int{1, 2, 3},
 		},
-		{"drop more than slice length",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				12,
-			},
-			[]int{},
+		{
+			name:      "drop exactly slice length",
+			input:     []int{1, 2, 3},
+			numToDrop: 3,
+			expected:  nil,
 		},
-		{"drop slice length",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				9,
-			},
-			[]int{},
+		{
+			name:      "drop more than slice length",
+			input:     []int{1, 2, 3},
+			numToDrop: 5,
+			expected:  nil,
 		},
-		{"drop all but last",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				8,
-			},
-			[]int{1},
+		{
+			name:      "drop zero elements",
+			input:     []int{1, 2, 3},
+			numToDrop: 0,
+			expected:  []int{1, 2, 3},
+		},
+		{
+			name:      "drop negative number of elements",
+			input:     []int{1, 2, 3},
+			numToDrop: -1,
+			expected:  []int{1, 2, 3},
+		},
+		{
+			name:      "empty slice",
+			input:     []int{},
+			numToDrop: 3,
+			expected:  []int{},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := DropLast(tt.args.s, tt.args.n); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("DropLast() = %v, expected %v", got, tt.want)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := DropLast(testCase.input, testCase.numToDrop)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("DropLast() = %v, expected %v", actual, testCase.expected)
 			}
 		})
 	}
 }
 
 func TestDropLastWhile(t *testing.T) {
-	type args struct {
-		s  []int
-		fn func(int) bool
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
+	testCases := []struct {
+		name      string
+		input     []int
+		predicate func(int) bool
+		expected  []int
 	}{
 		{
-			"test dropLastWhile",
-			args{
-				[]int{1, 2, 3, 4, 5, 6},
-				func(i int) bool { return i > 3 },
-			},
-			[]int{1, 2, 3},
+			name:      "drop elements greater than 3 at end",
+			input:     []int{1, 2, 5, 4},
+			predicate: func(x int) bool { return x > 3 },
+			expected:  []int{1, 2},
 		},
 		{
-			"emtpy list",
-			args{
-				[]int{},
-				func(i int) bool { return i > 3 },
-			},
-			[]int{},
+			name:      "no elements match predicate",
+			input:     []int{1, 2, 3},
+			predicate: func(x int) bool { return x > 5 },
+			expected:  []int{1, 2, 3},
 		},
 		{
-			"drop all",
-			args{
-				[]int{1, 2, 3, 4, 5, 6},
-				func(i int) bool { return i > 0 },
-			},
-			[]int{},
+			name:      "all elements match predicate",
+			input:     []int{5, 6, 7},
+			predicate: func(x int) bool { return x > 1 },
+			expected:  []int{},
 		},
 		{
-			"drop all but one",
-			args{
-				[]int{1, 2, 3, 4, 5, 6},
-				func(i int) bool { return i > 1 },
-			},
-			[]int{1},
+			name:      "empty slice",
+			input:     []int{},
+			predicate: func(x int) bool { return x > 1 },
+			expected:  []int{},
+		},
+		{
+			name:      "predicate matches only last element",
+			input:     []int{1, 2, 3, 4},
+			predicate: func(x int) bool { return x == 4 },
+			expected:  []int{1, 2, 3},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := DropLastWhile(tt.args.s, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("DropLastWhile() = %v, expected %v", got, tt.want)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := DropLastWhile(testCase.input, testCase.predicate)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("DropLastWhile() = %v, expected %v", actual, testCase.expected)
 			}
 		})
 	}
