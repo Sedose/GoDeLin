@@ -148,30 +148,49 @@ func TestAny(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
-	type args struct {
-		elems []int
-		fn    func(int) bool
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
+	testCases := []struct {
+		name      string
+		slice     []int
+		predicate func(int) bool
+		expected  []int
 	}{
-		{"test filtering",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8},
-				func(i int) bool { return i%2 == 0 },
-			},
-			[]int{2, 4, 6, 8},
+		{
+			name:      "filter even numbers",
+			slice:     []int{1, 2, 3, 4, 5, 6},
+			predicate: func(x int) bool { return x%2 == 0 },
+			expected:  []int{2, 4, 6},
+		},
+		{
+			name:      "no elements match predicate",
+			slice:     []int{1, 3, 5},
+			predicate: func(x int) bool { return x%2 == 0 },
+			expected:  []int{},
+		},
+		{
+			name:      "all elements match predicate",
+			slice:     []int{2, 4, 6},
+			predicate: func(x int) bool { return x%2 == 0 },
+			expected:  []int{2, 4, 6},
+		},
+		{
+			name:      "empty slice",
+			slice:     []int{},
+			predicate: func(x int) bool { return x > 0 },
+			expected:  []int{},
+		},
+		{
+			name:      "predicate matches only first element",
+			slice:     []int{9, 1, 2, 3},
+			predicate: func(x int) bool { return x == 9 },
+			expected:  []int{9},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Filter(tt.args.elems, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("Filter() = %v, expected %v", got, tt.want)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := Filter(testCase.slice, testCase.predicate)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("Filter() = %v, expected %v", actual, testCase.expected)
 			}
 		})
 	}
@@ -573,30 +592,92 @@ func TestDropWhile(t *testing.T) {
 }
 
 func TestFilterIndexed(t *testing.T) {
-	type args struct {
-		s  []int
-		fn func(int, int) bool
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
+	testCases := []struct {
+		name       string
+		inputSlice []int
+		predicate  func(int, int) bool
+		expected   []int
 	}{
-		{"filter indexed",
-			args{
-				[]int{0, 1, 2, 3, 4, 8, 6},
-				func(index int, v int) bool { return index == v },
-			},
-			[]int{0, 1, 2, 3, 4, 6},
+		{
+			name:       "index equals value",
+			inputSlice: []int{0, 1, 2, 3, 4, 8, 6},
+			predicate:  func(index, value int) bool { return index == value },
+			expected:   []int{0, 1, 2, 3, 4, 6},
+		},
+		{
+			name:       "index less than value",
+			inputSlice: []int{1, 2, 3, 2, 1},
+			predicate:  func(index, value int) bool { return index < value },
+			expected:   []int{1, 2, 3},
+		},
+		{
+			name:       "no elements match",
+			inputSlice: []int{10, 10, 10},
+			predicate:  func(index, value int) bool { return index > value },
+			expected:   []int{},
+		},
+		{
+			name:       "all elements match",
+			inputSlice: []int{5, 6, 7},
+			predicate:  func(index, value int) bool { return index < 10 },
+			expected:   []int{5, 6, 7},
+		},
+		{
+			name:       "empty slice",
+			inputSlice: []int{},
+			predicate:  func(index, value int) bool { return true },
+			expected:   []int{},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := FilterIndexed(tt.args.s, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("FilterIndexed() = %v, expected %v", got, tt.want)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := FilterIndexed(testCase.inputSlice, testCase.predicate)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("FilterIndexed() = %v, expected %v", actual, testCase.expected)
+			}
+		})
+	}
+}
+
+func TestFlatMap(t *testing.T) {
+	testCases := []struct {
+		name       string
+		inputSlice []int
+		transform  func(int) []int
+		expected   []int
+	}{
+		{
+			name:       "expand with squares",
+			inputSlice: []int{1, 2, 3},
+			transform:  func(x int) []int { return []int{x, x * x} },
+			expected:   []int{1, 1, 2, 4, 3, 9},
+		},
+		{
+			name:       "flatten empty slices",
+			inputSlice: []int{1, 2, 3},
+			transform:  func(x int) []int { return []int{} },
+			expected:   []int{},
+		},
+		{
+			name:       "identity",
+			inputSlice: []int{1, 2, 3},
+			transform:  func(x int) []int { return []int{x} },
+			expected:   []int{1, 2, 3},
+		},
+		{
+			name:       "empty input slice",
+			inputSlice: []int{},
+			transform:  func(x int) []int { return []int{x, x + 1} },
+			expected:   []int{},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := FlatMap(testCase.inputSlice, testCase.transform)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("FlatMap() = %v, expected %v", actual, testCase.expected)
 			}
 		})
 	}
@@ -776,34 +857,6 @@ func TestMap(t *testing.T) {
 				tt.want,
 			) {
 				t.Errorf("Map() = %v, expected %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestFlatMap(t *testing.T) {
-	type args struct {
-		elems []int
-		fn    func(int) []int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
-	}{
-		{"test mapping",
-			args{
-				[]int{1, 2, 3, 4, 5},
-				func(i int) []int { return []int{i, i * i} },
-			},
-			[]int{1, 1, 2, 4, 3, 9, 4, 16, 5, 25},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := FlatMap(tt.args.elems, tt.args.fn)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FlatMap() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -1266,22 +1319,6 @@ func TestUnZip(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got2, want2) {
 		t.Errorf("Zip() first list = %v, expected %v", got2, want2)
-	}
-}
-
-func TestFilterMap(t *testing.T) {
-	s := []int{1, 2, 3, 4, 5}
-	got := FilterMap(s,
-		func(i int) (int, bool) {
-			if i%2 != 0 {
-				return i, false // drop odd numbers
-			}
-			return i * i, true // square even numbers
-		},
-	)
-	want := []int{4, 16}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("FilterMap() = %v, expected %v", got, want)
 	}
 }
 
