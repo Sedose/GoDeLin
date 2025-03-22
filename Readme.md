@@ -2,22 +2,17 @@
 
 ### Bringing Kotlin's Expressiveness to Go
 
-Welcome to GoDelin, the Go library inspired by Kotlin. Tired of writing endless loops and `if err != nil`? GoDelin helps you write expressive, declarative code while maintaining Go's speed and reliability.
+Welcome to GoDeLin, the Go library inspired by Kotlin standard library.
+
+GoDeLin helps you write expressive, declarative Go code.
 
 📖 **Overview**
-GoDelin transforms Go into a more expressive language with Kotlin-inspired utility functions for slices, maps, and collections. With GoDelin, you can:
+GoDeLin transforms Go into a more expressive language with Kotlin-inspired utility functions for slices, maps, and collections.
+
+With GoDeLin, you can:
 
 - Write clear, expressive code using functions like `All`, `Any`, `GroupBy`, `Chunked`, `Distinct`, `Filter`, `Map`, `FlatMap`, and more.
-- Replace repetitive loops with declarative operations.
-
-🎯 **Features**
-**Kotlin-Style Functions:**
-- `All` / `Any`: Check if all or any elements satisfy a predicate.
-- `GroupBy`: Turn a slice into a map based on a transformation.
-- `Chunked` & `ChunkedBy`: Break your slice into fixed-size or conditionally grouped chunks.
-- `Distinct` / `DistinctBy`: Filter out duplicates while keeping the order.
-- `Filter`, `Map`, `FlatMap`: Transform and filter collections.
-- Additional helpers like `Drop`, `Take`, `Zip`, and `Unzip`.
+- Replace repetitive `loops` and `ifs` with declarative operations.
 
 **Declarative Syntax:**
 Chain operations in a functional style.
@@ -29,16 +24,16 @@ Comprehensive test suite ensures reliability (see `slice_test.go`).
 Functions are crafted for performance using efficient algorithms.
 
 📦 **Installation**
-To add GoDelin to your project:
+To add GoDeLin to your project:
 
 ```bash
-go get github.com/Sedose/godelin
+go get github.com/Sedose/GoDeLin
 ```
 
 Then import it in your Go files:
 
 ```go
-import "github.com/Sedose/godelin"
+import "github.com/Sedose/GoDeLin"
 ```
 
 🔧 **Usage Examples**
@@ -90,6 +85,6 @@ go test ./...
 ```
 
 🚀 **Conclusion**
-GoDelin brings Kotlin’s expressiveness to Go. Write cleaner, more maintainable code.
+GoDeLin brings Kotlin’s expressiveness to Go. Write cleaner, more maintainable code.
 
 Happy coding! 🚀

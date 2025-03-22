@@ -139,19 +139,13 @@ func DropLastWhile[T any](inputSlice []T, predicate func(T) bool) []T {
 	return []T{}
 }
 
-// DropWhile returns a slice containing all elements except the first elements
-// that satisfy the given predicate
-func DropWhile[T any](s []T, fn func(T) bool) []T {
-	if len(s) == 0 {
-		return s
-	}
-	i := 0
-	for ; i < len(s); i++ {
-		if !fn(s[i]) {
-			break
+func DropWhile[T any](slice []T, predicate func(T) bool) []T {
+	for i, element := range slice {
+		if !predicate(element) {
+			return slice[i:]
 		}
 	}
-	return s[i:]
+	return []T{}
 }
 
 // Filter returns the slice obtained after retaining only those elements

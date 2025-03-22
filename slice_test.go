@@ -524,52 +524,49 @@ func TestDropLastWhile(t *testing.T) {
 }
 
 func TestDropWhile(t *testing.T) {
-	type args struct {
-		s  []int
-		fn func(int) bool
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
+	testCases := []struct {
+		name      string
+		slice     []int
+		predicate func(int) bool
+		expected  []int
 	}{
-		{"less than slice len",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8},
-				func(i int) bool { return i < 5 },
-			},
-			[]int{5, 6, 7, 8},
+		{
+			name:      "drop elements less than 4",
+			slice:     []int{1, 2, 3, 4, 5},
+			predicate: func(x int) bool { return x < 4 },
+			expected:  []int{4, 5},
 		},
-		{"empty slice",
-			args{
-				[]int{},
-				func(i int) bool { return i < 5 },
-			},
-			[]int{},
+		{
+			name:      "no elements match predicate",
+			slice:     []int{1, 2, 3},
+			predicate: func(x int) bool { return x > 10 },
+			expected:  []int{1, 2, 3},
 		},
-
-		{"drop all",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8},
-				func(i int) bool { return i < 9 },
-			},
-			[]int{},
+		{
+			name:      "all elements match predicate",
+			slice:     []int{5, 6, 7},
+			predicate: func(x int) bool { return x > 1 },
+			expected:  []int{},
 		},
-		{"drop all but one",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8},
-				func(i int) bool { return i < 8 },
-			},
-			[]int{8},
+		{
+			name:      "empty slice",
+			slice:     []int{},
+			predicate: func(x int) bool { return x < 5 },
+			expected:  []int{},
+		},
+		{
+			name:      "predicate matches first element only",
+			slice:     []int{2, 3, 4},
+			predicate: func(x int) bool { return x == 2 },
+			expected:  []int{3, 4},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := DropWhile(tt.args.s, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("DropWhile() = %v, expected %v", got, tt.want)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := DropWhile(testCase.slice, testCase.predicate)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("DropWhile() = %v, expected %v", actual, testCase.expected)
 			}
 		})
 	}
