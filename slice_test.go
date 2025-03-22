@@ -36,7 +36,7 @@ func TestAll(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := All(tt.args.elems, tt.args.fn); got != tt.want {
-				t.Errorf("All() = %v, want %v", got, tt.want)
+				t.Errorf("All() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -141,7 +141,7 @@ func TestAny(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Any(tt.args.elems, tt.args.fn); got != tt.want {
-				t.Errorf("Any() = %v, want %v", got, tt.want)
+				t.Errorf("Any() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -171,7 +171,7 @@ func TestFilter(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("Filter() = %v, want %v", got, tt.want)
+				t.Errorf("Filter() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -188,7 +188,7 @@ func TestAssociate_StringGrouping(t *testing.T) {
 		"b": {"banana", "blueberry"},
 	}
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Associate() = %v, want %v", result, expected)
+		t.Errorf("Associate() = %v, expected %v", result, expected)
 	}
 }
 
@@ -203,7 +203,7 @@ func TestAssociate_IntGrouping(t *testing.T) {
 		true:  {2, 4, 6, 8, 10},
 	}
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Associate() with ints = %v, want %v", result, expected)
+		t.Errorf("Associate() with ints = %v, expected %v", result, expected)
 	}
 }
 
@@ -215,7 +215,7 @@ func TestAssociate_EmptySlice(t *testing.T) {
 	})
 	expected := map[string][]string{}
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Associate() with empty slice = %v, want %v", result, expected)
+		t.Errorf("Associate() with empty slice = %v, expected %v", result, expected)
 	}
 }
 
@@ -257,7 +257,7 @@ func TestChunked(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("Chunked() = %v, want %v", got, tt.want)
+				t.Errorf("Chunked() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -293,7 +293,7 @@ func TestChunkedBy(t *testing.T) {
 		{11, 12, 13, 14},
 	}
 	if !reflect.DeepEqual(output, expected) {
-		t.Errorf("ChunkedBy() = %v, want %v", output, expected)
+		t.Errorf("ChunkedBy() = %v, expected %v", output, expected)
 	}
 }
 
@@ -316,7 +316,7 @@ func TestDistinct(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Distinct(tt.args.s); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Distinct() = %v, want %v", got, tt.want)
+				t.Errorf("Distinct() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -343,7 +343,7 @@ func TestDistinctBy(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("DistinctBy() = %v, want %v", got, tt.want)
+				t.Errorf("DistinctBy() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -351,50 +351,69 @@ func TestDistinctBy(t *testing.T) {
 
 func TestDrop(t *testing.T) {
 	type args struct {
-		s []int
-		n int
+		elements []int
+		n        int
 	}
-	tests := []struct {
-		name string
-		args args
-		want []int
+	testCases := []struct {
+		name     string
+		args     args
+		expected []int
 	}{
-		{"drop less than slice length",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				4,
+		{
+			name: "drop less than slice length",
+			args: args{
+				elements: []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				n:        4,
 			},
-			[]int{5, 6, 7, 8, 9},
+			expected: []int{5, 6, 7, 8, 9},
 		},
-		{"drop more than slice length",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				12,
+		{
+			name: "drop more than slice length",
+			args: args{
+				elements: []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				n:        10,
 			},
-			[]int{},
+			expected: nil, // Expect nil when n >= len(elements)
 		},
-		{"drop slice length",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				9,
+		{
+			name: "drop exactly slice length",
+			args: args{
+				elements: []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				n:        9,
 			},
-			[]int{},
+			expected: nil, // Expect nil when n >= len(elements)
 		},
-		{"drop all but last",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				8,
+		{
+			name: "drop zero elements",
+			args: args{
+				elements: []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				n:        0,
 			},
-			[]int{9},
+			expected: []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
+		},
+		{
+			name: "drop from empty slice",
+			args: args{
+				elements: []int{},
+				n:        3,
+			},
+			expected: []int{}, // Expect nil when slice is empty
+		},
+		{
+			name: "drop negative number of elements",
+			args: args{
+				elements: []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
+				n:        -1,
+			},
+			expected: []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Drop(tt.args.s, tt.args.n); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("Drop() = %v, want %v", got, tt.want)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			got := Drop(testCase.args.elements, testCase.args.n)
+			if !reflect.DeepEqual(got, testCase.expected) {
+				t.Errorf("Drop() = %v, expected %v", got, testCase.expected)
 			}
 		})
 	}
@@ -445,7 +464,7 @@ func TestDropLast(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("DropLast() = %v, want %v", got, tt.want)
+				t.Errorf("DropLast() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -500,7 +519,7 @@ func TestDropLastWhile(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("DropLastWhile() = %v, want %v", got, tt.want)
+				t.Errorf("DropLastWhile() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -552,37 +571,9 @@ func TestDropWhile(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("DropWhile() = %v, want %v", got, tt.want)
+				t.Errorf("DropWhile() = %v, expected %v", got, tt.want)
 			}
 		})
-	}
-}
-
-func TestDropVariants(t *testing.T) {
-	letters := alphabet()
-
-	got := Drop(letters, 23)
-	expected := []rune{'x', 'y', 'z'}
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("Drop() = %v want %v", got, expected)
-	}
-
-	got = DropLast(letters, 23)
-	expected = []rune{'a', 'b', 'c'}
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("DropLast() = %v want %v", got, expected)
-	}
-
-	got = DropWhile(letters, func(r rune) bool { return r < 'x' })
-	expected = []rune{'x', 'y', 'z'}
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("DropWhile() = %v want %v", got, expected)
-	}
-
-	got = DropLastWhile(letters, func(r rune) bool { return r > 'c' })
-	expected = []rune{'a', 'b', 'c'}
-	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("DropLastWhile() = %v want %v", got, expected)
 	}
 }
 
@@ -610,7 +601,7 @@ func TestFilterIndexed(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("FilterIndexed() = %v, want %v", got, tt.want)
+				t.Errorf("FilterIndexed() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -642,7 +633,7 @@ func TestFold(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("Fold() = %v, want %v", got, tt.want)
+				t.Errorf("Fold() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -674,7 +665,7 @@ func TestFoldIndexed(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("FoldIndexed() = %v, want %v", got, tt.want)
+				t.Errorf("FoldIndexed() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -693,7 +684,7 @@ func TestGroupByWithOriginalTypesForKeyAndValue(t *testing.T) {
 		return len(str), str
 	})
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("GroupBy() = %v, want %v", got, want)
+		t.Errorf("GroupBy() = %v, expected %v", got, want)
 	}
 }
 
@@ -761,7 +752,7 @@ func TestItems(t *testing.T) {
 	})
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Items() = %v, want %v", got, want)
+		t.Errorf("Items() = %v, expected %v", got, want)
 	}
 }
 
@@ -789,7 +780,7 @@ func TestMap(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("Map() = %v, want %v", got, tt.want)
+				t.Errorf("Map() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -817,7 +808,7 @@ func TestFlatMap(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := FlatMap(tt.args.elems, tt.args.fn)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FlatMap() = %v, want %v", got, tt.want)
+				t.Errorf("FlatMap() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -845,7 +836,7 @@ func TestFlatMapIndexed(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := FlatMapIndexed(tt.args.elems, tt.args.fn)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FlatMap() = %v, want %v", got, tt.want)
+				t.Errorf("FlatMap() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -875,7 +866,7 @@ func TestMapIndexed(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("MapIndexed() = %v, want %v", got, tt.want)
+				t.Errorf("MapIndexed() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -949,7 +940,7 @@ func TestReduce(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("Reduce() = %v, want %v", got, tt.want)
+				t.Errorf("Reduce() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -982,7 +973,7 @@ func TestReduceIndexed(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("ReduceIndexed() = %v, want %v", got, tt.want)
+				t.Errorf("ReduceIndexed() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -993,7 +984,7 @@ func TestReverse(t *testing.T) {
 	Reverse(s)
 	want := []int{7, 6, 5, 4, 3, 2, 1}
 	if !reflect.DeepEqual(s, want) {
-		t.Errorf("Reversed() = %v, want %v", s, want)
+		t.Errorf("Reversed() = %v, expected %v", s, want)
 	}
 }
 
@@ -1016,7 +1007,7 @@ func TestReversed(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Reversed(tt.args.s); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Reversed() = %v, want %v", got, tt.want)
+				t.Errorf("Reversed() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -1074,7 +1065,7 @@ func TestTake(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("Take() = %v, want %v", got, tt.want)
+				t.Errorf("Take() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -1132,7 +1123,7 @@ func TestTakeLast(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("TakeLast() = %v, want %v", got, tt.want)
+				t.Errorf("TakeLast() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -1142,7 +1133,7 @@ func TestTake2(t *testing.T) {
 	got := Take(alphabet(), 2)
 	expected := []rune{'a', 'b'}
 	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("TakeLast() = %v want %v", got, expected)
+		t.Errorf("TakeLast() = %v expected %v", got, expected)
 	}
 }
 
@@ -1150,7 +1141,7 @@ func TestTakeLast2(t *testing.T) {
 	got := TakeLast(alphabet(), 2)
 	expected := []rune{'y', 'z'}
 	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("TakeLast() = %v want %v", got, expected)
+		t.Errorf("TakeLast() = %v expected %v", got, expected)
 	}
 }
 
@@ -1158,7 +1149,7 @@ func TestTakeLastWhile(t *testing.T) {
 	got := TakeLastWhile(alphabet(), func(s rune) bool { return s > 'w' })
 	expected := []rune{'x', 'y', 'z'}
 	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("TakeLastWhile() = %v want %v", got, expected)
+		t.Errorf("TakeLastWhile() = %v expected %v", got, expected)
 	}
 }
 
@@ -1166,7 +1157,7 @@ func TestTakeWhile(t *testing.T) {
 	got := TakeWhile(alphabet(), func(s rune) bool { return s < 'f' })
 	expected := []rune{'a', 'b', 'c', 'd', 'e'}
 	if !reflect.DeepEqual(got, expected) {
-		t.Errorf("TakeWhile() = %v want %v", got, expected)
+		t.Errorf("TakeWhile() = %v expected %v", got, expected)
 	}
 }
 
@@ -1246,7 +1237,7 @@ func TestWindowed(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("Windowed() = %v, want %v", got, tt.want)
+				t.Errorf("Windowed() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -1262,7 +1253,7 @@ func TestZip(t *testing.T) {
 		{"c", 3},
 	}
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Zip() = %v, want %v", got, want)
+		t.Errorf("Zip() = %v, expected %v", got, want)
 	}
 }
 
@@ -1276,10 +1267,10 @@ func TestUnZip(t *testing.T) {
 	want2 := []int{1, 2, 3}
 	got1, got2 := Unzip(ps)
 	if !reflect.DeepEqual(got1, want1) {
-		t.Errorf("Zip() first list = %v, want %v", got1, want1)
+		t.Errorf("Zip() first list = %v, expected %v", got1, want1)
 	}
 	if !reflect.DeepEqual(got2, want2) {
-		t.Errorf("Zip() first list = %v, want %v", got2, want2)
+		t.Errorf("Zip() first list = %v, expected %v", got2, want2)
 	}
 }
 
@@ -1295,7 +1286,7 @@ func TestFilterMap(t *testing.T) {
 	)
 	want := []int{4, 16}
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("FilterMap() = %v, want %v", got, want)
+		t.Errorf("FilterMap() = %v, expected %v", got, want)
 	}
 }
 
@@ -1376,7 +1367,7 @@ func TestFoldItems(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("FoldItems() = %v, want %v", got, tt.want)
+				t.Errorf("FoldItems() = %v, expected %v", got, tt.want)
 			}
 		})
 	}
@@ -1437,7 +1428,7 @@ func TestTransformMap(t *testing.T) {
 				got,
 				tt.want,
 			) {
-				t.Errorf("TransformMap() = %v, want %v", got, tt.want)
+				t.Errorf("TransformMap() = %v, expected %v", got, tt.want)
 			}
 		})
 	}

@@ -192,12 +192,15 @@ func DistinctBy[T any, K comparable](elements []T, keySelector func(T) K) []T {
 	return result
 }
 
-// Drop returns a slice containing all elements except the first n
-func Drop[T any](s []T, n int) []T {
-	if n >= len(s) {
-		return make([]T, 0)
+// Drop returns a slice containing all elements except the first n elements.
+func Drop[T any](elements []T, n int) []T {
+	if n <= 0 || len(elements) == 0 {
+		return elements
 	}
-	return s[n:]
+	if n >= len(elements) {
+		return nil
+	}
+	return elements[n:]
 }
 
 // DropLast returns a slice containing all elements except the last n
