@@ -176,28 +176,28 @@ func FlatMap[T1, T2 any](inputSlice []T1, transform func(T1) []T2) []T2 {
 	return result
 }
 
-func FlatMapIndexed[T1, T2 any](s []T1, fn func(int, T1) []T2) []T2 {
-	var ret []T2
-	for i, e := range s {
-		ret = append(ret, fn(i, e)...)
+func FlatMapIndexed[T1, T2 any](inputSlice []T1, transform func(int, T1) []T2) []T2 {
+	result := make([]T2, 0, len(inputSlice))
+	for index, element := range inputSlice {
+		result = append(result, transform(index, element)...)
 	}
-	return ret
+	return result
 }
 
-func Fold[T, R any](s []T, initial R, fn func(R, T) R) R {
-	acc := initial
-	for _, e := range s {
-		acc = fn(acc, e)
+func Fold[T, R any](inputSlice []T, initial R, operation func(R, T) R) R {
+	accumulator := initial
+	for _, element := range inputSlice {
+		accumulator = operation(accumulator, element)
 	}
-	return acc
+	return accumulator
 }
 
-func FoldIndexed[T, R any](s []T, initial R, fn func(int, R, T) R) R {
-	acc := initial
-	for i, e := range s {
-		acc = fn(i, acc, e)
+func FoldIndexed[T, R any](inputSlice []T, initial R, operation func(int, R, T) R) R {
+	accumulator := initial
+	for i, element := range inputSlice {
+		accumulator = operation(i, accumulator, element)
 	}
-	return acc
+	return accumulator
 }
 
 func FoldItems[M ~map[K]V, K comparable, V, R any](

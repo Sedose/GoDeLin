@@ -683,70 +683,6 @@ func TestFlatMap(t *testing.T) {
 	}
 }
 
-func TestFold(t *testing.T) {
-	type args struct {
-		s       []int
-		initial int
-		fn      func(int, int) int
-	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{
-		{"summation by fold",
-			args{
-				[]int{1, 2, 3, 4, 5},
-				0,
-				func(acc, v int) int { return acc + v },
-			},
-			15,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Fold(tt.args.s, tt.args.initial, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("Fold() = %v, expected %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestFoldIndexed(t *testing.T) {
-	type args struct {
-		s       []int
-		initial int
-		fn      func(int, int, int) int
-	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{
-		{"fold indexed",
-			args{
-				[]int{1, 2, 3, 4, 5},
-				0,
-				func(index, acc, v int) int { return acc + index*v },
-			},
-			40,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := FoldIndexed(tt.args.s, tt.args.initial, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("FoldIndexed() = %v, expected %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGroupByWithOriginalTypesForKeyAndValue(t *testing.T) {
 
 	input := []string{"a", "abc", "ab", "def", "abcd"}
@@ -863,28 +799,132 @@ func TestMap(t *testing.T) {
 }
 
 func TestFlatMapIndexed(t *testing.T) {
-	type args struct {
-		elems []int
-		fn    func(idx, val int) []int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
+	testCases := []struct {
+		name       string
+		inputSlice []int
+		transform  func(int, int) []int
+		expected   []int
 	}{
-		{"test mapping",
-			args{
-				[]int{1, 2, 3, 4, 5},
-				func(idx, val int) []int { return []int{idx, val * val} },
+		{
+			name:       "index and square",
+			inputSlice: []int{1, 2, 3},
+			transform:  func(i, v int) []int { return []int{i, v * v} },
+			expected:   []int{0, 1, 1, 4, 2, 9},
+		},
+		{
+			name:       "repeat element by index",
+			inputSlice: []int{7, 8, 9},
+			transform: func(i, v int) []int {
+				repeated := make([]int, i)
+				for j := 0; j < i; j++ {
+					repeated[j] = v
+				}
+				return repeated
 			},
-			[]int{0, 1, 1, 4, 2, 9, 3, 16, 4, 25},
+			expected: []int{8, 9, 9},
+		},
+		{
+			name:       "empty input slice",
+			inputSlice: []int{},
+			transform:  func(i, v int) []int { return []int{i + v} },
+			expected:   []int{},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := FlatMapIndexed(tt.args.elems, tt.args.fn)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FlatMap() = %v, expected %v", got, tt.want)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := FlatMapIndexed(testCase.inputSlice, testCase.transform)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("FlatMapIndexed() = %v, expected %v", actual, testCase.expected)
+			}
+		})
+	}
+}
+
+func TestFold(t *testing.T) {
+	testCases := []struct {
+		name       string
+		inputSlice []int
+		initial    int
+		operation  func(int, int) int
+		expected   int
+	}{
+		{
+			name:       "sum of elements",
+			inputSlice: []int{1, 2, 3, 4},
+			initial:    0,
+			operation:  func(acc, v int) int { return acc + v },
+			expected:   10,
+		},
+		{
+			name:       "product of elements",
+			inputSlice: []int{1, 2, 3, 4},
+			initial:    1,
+			operation:  func(acc, v int) int { return acc * v },
+			expected:   24,
+		},
+		{
+			name:       "subtract all elements",
+			inputSlice: []int{1, 2, 3},
+			initial:    10,
+			operation:  func(acc, v int) int { return acc - v },
+			expected:   4, // 10 - 1 - 2 - 3
+		},
+		{
+			name:       "empty input slice",
+			inputSlice: []int{},
+			initial:    42,
+			operation:  func(acc, v int) int { return acc + v },
+			expected:   42,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := Fold(testCase.inputSlice, testCase.initial, testCase.operation)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("Fold() = %v, expected %v", actual, testCase.expected)
+			}
+		})
+	}
+}
+
+func TestFoldIndexed(t *testing.T) {
+	testCases := []struct {
+		name       string
+		inputSlice []int
+		initial    int
+		operation  func(int, int, int) int
+		expected   int
+	}{
+		{
+			name:       "weighted sum by index",
+			inputSlice: []int{1, 2, 3, 4},
+			initial:    0,
+			operation:  func(index, acc, v int) int { return acc + index*v },
+			expected:   20, // 0+1*2+2*3+3*4 = 2+6+12
+		},
+		{
+			name:       "subtract with index multiplier",
+			inputSlice: []int{5, 6, 7},
+			initial:    100,
+			operation:  func(index, acc, v int) int { return acc - index*v },
+			expected:   100 - 1*6 - 2*7, // 100 - 6 - 14 = 80
+		},
+		{
+			name:       "empty slice",
+			inputSlice: []int{},
+			initial:    123,
+			operation:  func(i, acc, v int) int { return acc + v + i },
+			expected:   123,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := FoldIndexed(testCase.inputSlice, testCase.initial, testCase.operation)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("FoldIndexed() = %v, expected %v", actual, testCase.expected)
 			}
 		})
 	}
