@@ -741,12 +741,12 @@ func TestItems(t *testing.T) {
 		{"c", []int{1, 2, 3}},
 	}
 	sort.Slice(want, func(i, j int) bool {
-		return want[i].Fst < want[j].Fst
+		return want[i].First < want[j].First
 	})
 
 	got := Items(m)
 	sort.Slice(got, func(i, j int) bool {
-		return got[i].Fst < got[j].Fst
+		return got[i].First < got[j].First
 	})
 
 	if !reflect.DeepEqual(got, want) {

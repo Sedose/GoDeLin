@@ -141,9 +141,9 @@ func DropLastWhile[T any](inputSlice []T, predicate func(T) bool) []T {
 }
 
 func DropWhile[T any](inputSlice []T, predicate func(T) bool) []T {
-	for i, element := range inputSlice {
+	for index, element := range inputSlice {
 		if !predicate(element) {
-			return inputSlice[i:]
+			return inputSlice[index:]
 		}
 	}
 	return []T{}
@@ -195,8 +195,8 @@ func Fold[T, R any](inputSlice []T, initial R, operation func(R, T) R) R {
 
 func FoldIndexed[T, R any](inputSlice []T, initial R, operation func(int, R, T) R) R {
 	accumulator := initial
-	for i, element := range inputSlice {
-		accumulator = operation(i, accumulator, element)
+	for index, element := range inputSlice {
+		accumulator = operation(index, accumulator, element)
 	}
 	return accumulator
 }
@@ -213,28 +213,37 @@ func FoldMapEntries[M ~map[K]V, K comparable, V, R any](
 	return accumulator
 }
 
-func Items[M ~map[K]V, K comparable, V any](m M) []*Pair[K, V] {
-	ret := make([]*Pair[K, V], 0, len(m))
-	for k, v := range m {
-		ret = append(ret, &Pair[K, V]{k, v})
+func Items[M ~map[K]V, K comparable, V any](inputMap M) []*Pair[K, V] {
+	if len(inputMap) == 0 {
+		return nil
 	}
-	return ret
+	pairs := make([]*Pair[K, V], 0, len(inputMap))
+	for key, value := range inputMap {
+		pairs = append(pairs, &Pair[K, V]{First: key, Second: value})
+	}
+	return pairs
 }
 
-func Map[T1, T2 any](s []T1, fn func(T1) T2) []T2 {
-	ret := make([]T2, 0, len(s))
-	for _, e := range s {
-		ret = append(ret, fn(e))
+func Map[T, R any](inputSlice []T, transform func(T) R) []R {
+	if len(inputSlice) == 0 {
+		return nil
 	}
-	return ret
+	mapped := make([]R, 0, len(inputSlice))
+	for _, element := range inputSlice {
+		mapped = append(mapped, transform(element))
+	}
+	return mapped
 }
 
-func MapIndexed[T1, T2 any](s []T1, fn func(int, T1) T2) []T2 {
-	ret := make([]T2, 0, len(s))
-	for i, e := range s {
-		ret = append(ret, fn(i, e))
+func MapIndexed[T, R any](inputSlice []T, transform func(int, T) R) []R {
+	if len(inputSlice) == 0 {
+		return nil
 	}
-	return ret
+	mapped := make([]R, 0, len(inputSlice))
+	for index, element := range inputSlice {
+		mapped = append(mapped, transform(index, element))
+	}
+	return mapped
 }
 
 func Partition[T any](s []T, predicate func(T) bool) ([]T, []T) {
@@ -262,8 +271,8 @@ func ReduceIndexed[T any](s []T, fn func(int, T, T) T) T {
 		return s[0]
 	}
 	acc := s[0]
-	for i, e := range s[1:] {
-		acc = fn(i+1, acc, e)
+	for index, e := range s[1:] {
+		acc = fn(index+1, acc, e)
 	}
 	return acc
 }
@@ -341,8 +350,8 @@ func Unzip[T1 any, T2 any](ps []*Pair[T1, T2]) ([]T1, []T2) {
 	s1 := make([]T1, 0, l)
 	s2 := make([]T2, 0, l)
 	for _, p := range ps {
-		s1 = append(s1, p.Fst)
-		s2 = append(s2, p.Snd)
+		s1 = append(s1, p.First)
+		s2 = append(s2, p.Second)
 	}
 	return s1, s2
 }
@@ -396,18 +405,18 @@ func Zip[T1 any, T2 any](s1 []T1, s2 []T2) []*Pair[T1, T2] {
 
 	for i := 0; i < minLen; i++ {
 		ret = append(ret, &Pair[T1, T2]{
-			Fst: s1[i],
-			Snd: s2[i],
+			First:  s1[i],
+			Second: s2[i],
 		})
 	}
 	return ret
 }
 
-type Pair[T1, T2 any] struct {
-	Fst T1
-	Snd T2
+type Pair[F, S any] struct {
+	First  F
+	Second S
 }
 
 func (p Pair[T1, T2]) String() string {
-	return fmt.Sprintf("(%v, %v)", p.Fst, p.Snd)
+	return fmt.Sprintf("(%v, %v)", p.First, p.Second)
 }
