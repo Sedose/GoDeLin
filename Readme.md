@@ -1,27 +1,12 @@
 # GoDeLin 🚀
 
-### Bringing Kotlin's Expressiveness to Go
+### Bringing Kotlin's std lib expressiveness to Go
 
-Welcome to GoDeLin, the Go library inspired by Kotlin standard library.
+- GoDeLin is a Go library inspired by Kotlin standard library.
 
-GoDeLin helps you write expressive, declarative Go code.
+- GoDeLin helps you write expressive, declarative Go code.
 
-📖 **Overview**
-GoDeLin transforms Go into a more expressive language with Kotlin-inspired utility functions for slices, maps, and collections.
-
-With GoDeLin, you can:
-
-- Write clear, expressive code using functions like `All`, `Any`, `GroupBy`, `Chunked`, `Distinct`, `Filter`, `Map`, `FlatMap`, and more.
-- Replace repetitive `loops` and `ifs` with declarative operations.
-
-**Declarative Syntax:**
-Chain operations in a functional style.
-
-**Test-Driven Quality:**
-Comprehensive test suite ensures reliability (see `slice_test.go`).
-
-**Optimized for Go:**
-Functions are crafted for performance using efficient algorithms.
+- The goal is to complement Go, not to provide alternative to things that are effectively covered by the Go standard library.
 
 📦 **Installation**
 To add GoDeLin to your project:
@@ -37,54 +22,13 @@ import "github.com/Sedose/GoDeLin"
 ```
 
 🔧 **Usage Examples**
-
-**Grouping Strings by First Letter:**
-
-```go
-fruits := []string{"apple", "apricot", "banana", "avocado"}
-groups := GroupBy(fruits, func(fruit string) (string, string) {
-    return fruit[:1], fruit
-})
-// groups → map[string][]string{"a": {"apple", "apricot", "avocado"}, "b": {"banana"}}
-```
-
-**Chunking a Slice with Custom Logic:**
-
-```go
-nums := []int{1, 2, 3, 7, 8, 10, 11, 12, 20}
-groups := ChunkedBy(nums, func(prev, curr int) bool {
-    return curr == prev+1
-})
-// groups → [][]int{ {1, 2, 3}, {7, 8}, {10, 11, 12}, {20} }
-```
-
-**Filtering Unique Elements:**
-
-```go
-input := []int{3, 1, 2, 3, 2, 1}
-unique := Distinct(input)
-// unique → []int{3, 1, 2}
-```
-
-**Transforming and Filtering Collections:**
-
-```go
-nums := []int{1, 2, 3, 4, 5, 6}
-result := Map(
-    Filter(nums, func(n int) bool { return n%2 == 0 }),
-    func(n int) int { return n * n },
-)
-// result → []int{4, 16, 36}
-```
-
-🧪 **Testing**
-Run tests with:
-
-```bash
-go test ./...
-```
-
-🚀 **Conclusion**
-GoDeLin brings Kotlin’s expressiveness to Go. Write cleaner, more maintainable code.
+TODO
 
 Happy coding! 🚀
+
+📝 **These functions are not provided**
+-   `Chunked`. Use `slices.Chunk` function.
+-   `Drop`: Use standard Go slice syntax `slice[n:]`. Handle potential out-of-bounds access if needed (e.g., `slice[min(n, len(slice)):]`).
+-   `DropLast`: Use standard Go slice syntax `slice[:len(slice)-n]`. Handle potential negative results if needed (e.g., `slice[:max(0, len(slice)-n)]`).
+-   `Take`: Use standard Go slice syntax `slice[:n]`. Handle potential out-of-bounds access if needed (e.g., `slice[:min(n, len(slice))]`).
+-   `TakeLast`: Use standard Go slice syntax `slice[len(slice)-n:]`. Handle potential negative results if needed (e.g., `slice[max(0, len(slice)-n):]`).

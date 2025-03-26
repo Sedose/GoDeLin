@@ -224,50 +224,6 @@ func TestAssociate_EmptySlice(t *testing.T) {
 	}
 }
 
-func TestChunked(t *testing.T) {
-	type args struct {
-		s []int
-		n int
-	}
-	tests := []struct {
-		name string
-		args args
-		want [][]int
-	}{
-		{"exact multiple",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				3,
-			},
-			[][]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}},
-		},
-		{"extra elements",
-			args{
-				[]int{1, 2, 3, 4, 5, 6, 7, 8, 9},
-				2,
-			},
-			[][]int{{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9}},
-		},
-		{"not enough elements",
-			args{
-				[]int{1, 2, 3},
-				5,
-			},
-			[][]int{{1, 2, 3}},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Chunked(tt.args.s, tt.args.n); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("Chunked() = %v, expected %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestChunkedBy(t *testing.T) {
 	input := []int{
 		10,
@@ -1096,40 +1052,6 @@ func TestReduceIndexed(t *testing.T) {
 				tt.want,
 			) {
 				t.Errorf("ReduceIndexed() = %v, expected %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestReverse(t *testing.T) {
-	s := []int{1, 2, 3, 4, 5, 6, 7}
-	Reverse(s)
-	want := []int{7, 6, 5, 4, 3, 2, 1}
-	if !reflect.DeepEqual(s, want) {
-		t.Errorf("Reversed() = %v, expected %v", s, want)
-	}
-}
-
-func TestReversed(t *testing.T) {
-	type args struct {
-		s []int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
-	}{
-		{"reversed",
-			args{
-				[]int{1, 2, 3, 4, 5},
-			},
-			[]int{5, 4, 3, 2, 1},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Reversed(tt.args.s); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Reversed() = %v, expected %v", got, tt.want)
 			}
 		})
 	}

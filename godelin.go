@@ -1,7 +1,5 @@
 package godelin
 
-import "fmt"
-
 func All[T any](inputSlice []T, predicate func(T) bool) bool {
 	for _, element := range inputSlice {
 		if !predicate(element) {
@@ -36,22 +34,6 @@ func GroupBy[T any, K comparable, V any](inputSlice []T, transform func(T) (K, V
 		resultMap[key] = append(resultMap[key], value)
 	}
 	return resultMap
-}
-
-func Chunked[T any](inputSlice []T, chunkSize int) [][]T {
-	if chunkSize <= 0 {
-		panic("chunkSize must be positive")
-	}
-	totalItems := len(inputSlice)
-	result := make([][]T, 0, (totalItems+chunkSize-1)/chunkSize)
-	for start := 0; start < totalItems; start += chunkSize {
-		end := start + chunkSize
-		if end > totalItems {
-			end = totalItems
-		}
-		result = append(result, inputSlice[start:end])
-	}
-	return result
 }
 
 func ChunkedBy[T any](inputSlice []T, groupingFn func(T, T) bool) [][]T {
@@ -109,26 +91,6 @@ func DistinctBy[T any, K comparable](inputSlice []T, keySelector func(T) K) []T 
 	}
 
 	return result
-}
-
-func Drop[T any](inputSlice []T, numToDrop int) []T {
-	if numToDrop <= 0 || len(inputSlice) == 0 {
-		return inputSlice
-	}
-	if numToDrop >= len(inputSlice) {
-		return nil
-	}
-	return inputSlice[numToDrop:]
-}
-
-func DropLast[T any](inputSlice []T, numToDrop int) []T {
-	if numToDrop <= 0 || len(inputSlice) == 0 {
-		return inputSlice
-	}
-	if numToDrop >= len(inputSlice) {
-		return nil
-	}
-	return inputSlice[:len(inputSlice)-numToDrop]
 }
 
 func DropLastWhile[T any](inputSlice []T, predicate func(T) bool) []T {
@@ -282,46 +244,6 @@ func ReduceIndexed[T any](inputSlice []T, combine func(int, T, T) T) T {
 		})
 }
 
-func Reverse[T any](inputSlice []T) {
-	if len(inputSlice) < 2 {
-		return
-	}
-	for left, right := 0, len(inputSlice)-1; left < right; left, right = left+1, right-1 {
-		inputSlice[left], inputSlice[right] = inputSlice[right], inputSlice[left]
-	}
-}
-
-func Reversed[T any](inputSlice []T) []T {
-	if len(inputSlice) == 0 {
-		return nil
-	}
-	reversed := make([]T, len(inputSlice))
-	for index := range inputSlice {
-		reversed[index] = inputSlice[len(inputSlice)-1-index]
-	}
-	return reversed
-}
-
-func Take[T any](inputSlice []T, count int) []T {
-	if count <= 0 || len(inputSlice) == 0 {
-		return nil
-	}
-	if len(inputSlice) <= count {
-		return inputSlice
-	}
-	return inputSlice[:count]
-}
-
-func TakeLast[T any](inputSlice []T, count int) []T {
-	if count <= 0 || len(inputSlice) == 0 {
-		return nil
-	}
-	if len(inputSlice) <= count {
-		return inputSlice
-	}
-	return inputSlice[len(inputSlice)-count:]
-}
-
 func TakeLastWhile[T any](inputSlice []T, predicate func(T) bool) []T {
 	if len(inputSlice) == 0 {
 		return nil
@@ -432,8 +354,4 @@ func Zip[T1 any, T2 any](s1 []T1, s2 []T2) []*Pair[T1, T2] {
 type Pair[F, S any] struct {
 	First  F
 	Second S
-}
-
-func (p Pair[T1, T2]) String() string {
-	return fmt.Sprintf("(%v, %v)", p.First, p.Second)
 }
