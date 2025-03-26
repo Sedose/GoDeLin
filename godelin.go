@@ -249,86 +249,103 @@ func MapIndexed[T, R any](inputSlice []T, transform func(int, T) R) []R {
 func Partition[T any](s []T, predicate func(T) bool) ([]T, []T) {
 	first := make([]T, 0)
 	second := make([]T, 0)
-	for _, e := range s {
-		if predicate(e) {
-			first = append(first, e)
+	for _, element := range s {
+		if predicate(element) {
+			first = append(first, element)
 		} else {
-			second = append(second, e)
+			second = append(second, element)
 		}
 	}
 	return first, second
 }
 
-func Reduce[T any](s []T, fn func(T, T) T) T {
-	if len(s) == 1 {
-		return s[0]
+func Reduce[T any](inputSlice []T, combine func(T, T) T) T {
+	if len(inputSlice) == 0 {
+		panic("Reduce called on empty slice")
 	}
-	return Fold(s[1:], s[0], fn)
+	if len(inputSlice) == 1 {
+		return inputSlice[0]
+	}
+	return Fold(inputSlice[1:], inputSlice[0], combine)
 }
 
-func ReduceIndexed[T any](s []T, fn func(int, T, T) T) T {
-	if len(s) == 1 {
-		return s[0]
+func ReduceIndexed[T any](inputSlice []T, combine func(int, T, T) T) T {
+	if len(inputSlice) == 0 {
+		panic("ReduceIndexed called on empty slice")
 	}
-	acc := s[0]
-	for index, e := range s[1:] {
-		acc = fn(index+1, acc, e)
+	if len(inputSlice) == 1 {
+		return inputSlice[0]
 	}
-	return acc
+	return FoldIndexed(inputSlice[1:], inputSlice[0],
+		func(index int, acc T, element T) T {
+			return combine(index+1, acc, element)
+		})
 }
 
-func Reverse[T any](s []T) {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
+func Reverse[T any](inputSlice []T) {
+	if len(inputSlice) < 2 {
+		return
+	}
+	for left, right := 0, len(inputSlice)-1; left < right; left, right = left+1, right-1 {
+		inputSlice[left], inputSlice[right] = inputSlice[right], inputSlice[left]
 	}
 }
 
-func Reversed[T any](s []T) []T {
-	ret := make([]T, 0, len(s))
-	for i := len(s) - 1; i >= 0; i-- {
-		ret = append(ret, s[i])
+func Reversed[T any](inputSlice []T) []T {
+	if len(inputSlice) == 0 {
+		return nil
 	}
-	return ret
+	reversed := make([]T, len(inputSlice))
+	for index := range inputSlice {
+		reversed[index] = inputSlice[len(inputSlice)-1-index]
+	}
+	return reversed
 }
 
-func Take[T any](s []T, n int) []T {
-	if len(s) <= n {
-		return s
+func Take[T any](inputSlice []T, count int) []T {
+	if count <= 0 || len(inputSlice) == 0 {
+		return nil
 	}
-	return s[:n]
+	if len(inputSlice) <= count {
+		return inputSlice
+	}
+	return inputSlice[:count]
 }
 
-func TakeLast[T any](s []T, n int) []T {
-	if len(s) <= n {
-		return s
+func TakeLast[T any](inputSlice []T, count int) []T {
+	if count <= 0 || len(inputSlice) == 0 {
+		return nil
 	}
-	return s[len(s)-n:]
+	if len(inputSlice) <= count {
+		return inputSlice
+	}
+	return inputSlice[len(inputSlice)-count:]
 }
 
-func TakeLastWhile[T any](s []T, fn func(T) bool) []T {
-	if len(s) == 0 {
-		return s
+func TakeLastWhile[T any](inputSlice []T, predicate func(T) bool) []T {
+	if len(inputSlice) == 0 {
+		return nil
 	}
-	i := len(s) - 1
-	for ; i >= 0; i-- {
-		if !fn(s[i]) {
+	index := len(inputSlice) - 1
+	for ; index >= 0; index-- {
+		if !predicate(inputSlice[index]) {
 			break
 		}
 	}
-	return s[i+1:]
+	return inputSlice[index+1:]
 }
 
-func TakeWhile[T any](s []T, fn func(T) bool) []T {
-	if len(s) == 0 {
-		return s
+func TakeWhile[T any](inputSlice []T, predicate func(T) bool) []T {
+	if len(inputSlice) == 0 {
+		return nil
 	}
-	i := 0
-	for ; i < len(s); i++ {
-		if !fn(s[i]) {
+	var index int
+	for ; index < len(inputSlice); index++ {
+		if !predicate(inputSlice[index]) {
 			break
 		}
 	}
-	return s[:i]
+	return inputSlice[:index]
 }
 
 func TransformMap[M ~map[K]V, K comparable, V any](
