@@ -20,12 +20,13 @@ func Any[T any](inputSlice []T, predicate func(T) bool) bool {
 	return false
 }
 
-func GetOrPut[K comparable, V any](table map[K]V, key K, computeValue func() V) V {
-	if value, exists := table[key]; exists {
+func GetOrPut[M ~map[K]V, K comparable, V any](theMap M, key K, defaultValue func(K) V) V {
+	if value, exists := theMap[key]; exists {
 		return value
 	}
-	table[key] = computeValue()
-	return table[key]
+	newValue := defaultValue(key)
+	theMap[key] = newValue
+	return newValue
 }
 
 func GroupBy[T any, K comparable, V any](inputSlice []T, transform func(T) (K, V)) map[K][]V {
@@ -200,28 +201,16 @@ func FoldIndexed[T, R any](inputSlice []T, initial R, operation func(int, R, T) 
 	return accumulator
 }
 
-func FoldItems[M ~map[K]V, K comparable, V, R any](
-	m M,
-	initial R,
-	fn func(R, K, V) R,
+func FoldMapEntries[M ~map[K]V, K comparable, V, R any](
+	sourceMap M,
+	initialValue R,
+	combine func(R, K, V) R,
 ) R {
-	acc := initial
-	for k, v := range m {
-		acc = fn(acc, k, v)
+	accumulator := initialValue
+	for key, value := range sourceMap {
+		accumulator = combine(accumulator, key, value)
 	}
-	return acc
-}
-
-func GetOrInsert[M ~map[K]V, K comparable, V any](m M, k K, fn func(K) V) V {
-	v, ok := m[k]
-	if ok {
-		// present, return existing value
-		return v
-	}
-	// not present; get value, insert in map and return the new value
-	v = fn(k)
-	m[k] = v
-	return v
+	return accumulator
 }
 
 func Items[M ~map[K]V, K comparable, V any](m M) []*Pair[K, V] {

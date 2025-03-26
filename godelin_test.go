@@ -42,77 +42,6 @@ func TestAll(t *testing.T) {
 	}
 }
 
-// Test when key is already present in the map
-func TestGetOrPut_ExistingKey(t *testing.T) {
-	m := map[string]int{"a": 42}
-
-	got := GetOrPut(m, "a", func() int { return 100 })
-	expected := 42
-
-	if got != expected {
-		t.Errorf("GetOrPut() returned %v, expected %v", got, expected)
-	}
-}
-
-// Test when key is missing, default value should be inserted
-func TestGetOrPut_MissingKey(t *testing.T) {
-	m := map[string]int{}
-
-	got := GetOrPut(m, "b", func() int { return 100 })
-	expected := 100
-
-	if got != expected {
-		t.Errorf("GetOrPut() returned %v, expected %v", got, expected)
-	}
-
-	// Check if the key was actually inserted
-	if m["b"] != 100 {
-		t.Errorf("GetOrPut() did not insert the expected value into the map")
-	}
-}
-
-// Test GetOrPut with slice values
-func TestGetOrPut_SliceValue(t *testing.T) {
-	m := map[string][]int{}
-
-	got := GetOrPut(m, "c", func() []int { return []int{1, 2, 3} })
-	expected := []int{1, 2, 3}
-
-	if len(got) != len(expected) {
-		t.Errorf("GetOrPut() returned slice of length %d, expected %d", len(got), len(expected))
-	}
-
-	for i := range got {
-		if got[i] != expected[i] {
-			t.Errorf("GetOrPut() returned %v, expected %v", got, expected)
-		}
-	}
-
-	// Check if map was updated correctly
-	if len(m["c"]) != 3 {
-		t.Errorf("GetOrPut() did not insert the expected slice into the map")
-	}
-}
-
-func TestGetOrPut_StructValue(t *testing.T) {
-	type TestStruct struct {
-		Value string
-	}
-	m := map[int]TestStruct{}
-
-	got := GetOrPut(m, 10, func() TestStruct { return TestStruct{Value: "Hello"} })
-	expected := TestStruct{Value: "Hello"}
-
-	if got != expected {
-		t.Errorf("GetOrPut() returned %v, expected %v", got, expected)
-	}
-
-	// Check if map was updated
-	if m[10] != expected {
-		t.Errorf("GetOrPut() did not insert the expected struct into the map")
-	}
-}
-
 func TestAny(t *testing.T) {
 	type args struct {
 		elems []int
@@ -142,6 +71,63 @@ func TestAny(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Any(tt.args.elems, tt.args.fn); got != tt.want {
 				t.Errorf("Any() = %v, expected %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetOrPut(t *testing.T) {
+	testCases := []struct {
+		name         string
+		initialMap   map[string]int
+		key          string
+		defaultValue func(string) int
+		expected     int
+		finalMap     map[string]int
+	}{
+		{
+			name:       "key exists in map",
+			initialMap: map[string]int{"a": 10, "b": 20},
+			key:        "a",
+			defaultValue: func(k string) int {
+				return 99
+			},
+			expected: 10,
+			finalMap: map[string]int{"a": 10, "b": 20},
+		},
+		{
+			name:       "key does not exist, default applied",
+			initialMap: map[string]int{"x": 1},
+			key:        "y",
+			defaultValue: func(k string) int {
+				return 42
+			},
+			expected: 42,
+			finalMap: map[string]int{"x": 1, "y": 42},
+		},
+		{
+			name:       "default function uses key",
+			initialMap: map[string]int{},
+			key:        "key42",
+			defaultValue: func(k string) int {
+				if k == "key42" {
+					return 123
+				}
+				return 0
+			},
+			expected: 123,
+			finalMap: map[string]int{"key42": 123},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			result := GetOrPut(testCase.initialMap, testCase.key, testCase.defaultValue)
+			if result != testCase.expected {
+				t.Errorf("GetOrPut() = %v, expected %v", result, testCase.expected)
+			}
+			if !reflect.DeepEqual(testCase.initialMap, testCase.finalMap) {
+				t.Errorf("map after GetOrPut = %v, expected %v", testCase.initialMap, testCase.finalMap)
 			}
 		})
 	}
@@ -930,6 +916,54 @@ func TestFoldIndexed(t *testing.T) {
 	}
 }
 
+func TestFoldMapEntries(t *testing.T) {
+	testCases := []struct {
+		name     string
+		inputMap map[string]int
+		initial  int
+		combine  func(int, string, int) int
+		expected int
+	}{
+		{
+			name:     "sum values",
+			inputMap: map[string]int{"a": 10, "b": 20, "c": 30},
+			initial:  0,
+			combine:  func(acc int, _ string, v int) int { return acc + v },
+			expected: 60,
+		},
+		{
+			name:     "sum keys length and values",
+			inputMap: map[string]int{"apple": 5, "banana": 6},
+			initial:  0,
+			combine:  func(acc int, k string, v int) int { return acc + len(k) + v },
+			expected: (5 + 5) + (6 + 6), // 10 + 12 = 22
+		},
+		{
+			name:     "product of key length and value",
+			inputMap: map[string]int{"a": 3, "go": 5},
+			initial:  1,
+			combine:  func(acc int, k string, v int) int { return acc * len(k) * v },
+			expected: 1 * 1 * 3 * 2 * 5, // 3 * 10 = 30
+		},
+		{
+			name:     "empty map",
+			inputMap: map[string]int{},
+			initial:  100,
+			combine:  func(acc int, _ string, _ int) int { return acc + 1 },
+			expected: 100,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := FoldMapEntries(tc.inputMap, tc.initial, tc.combine)
+			if result != tc.expected {
+				t.Errorf("FoldMapEntries() = %v, expected %v", result, tc.expected)
+			}
+		})
+	}
+}
+
 func TestMapIndexed(t *testing.T) {
 	type args struct {
 		s  []int
@@ -1368,81 +1402,6 @@ func alphabet() []rune {
 		ret = append(ret, r)
 	}
 	return ret
-}
-
-func TestGetOrInsert(t *testing.T) {
-
-	m := map[int]int{1: 10, 2: 20}
-	fn := func(k int) int { return k * 10 }
-
-	// case where key is present
-	expected := 20
-	got := GetOrInsert(m, 2, fn)
-	if got != expected {
-		t.Errorf("GetOrInsert() = %d expected = %d", got, expected)
-	}
-
-	// case where key is not present, but populated by invoking the function
-	expected = 30
-	got = GetOrInsert(m, 3, fn)
-	if got != expected {
-		t.Errorf("GetOrInsert() = %d expected = %d", got, expected)
-	}
-
-	// check that the new value was stored in the map as well
-	expected = 30
-	got, ok := m[3]
-	if !ok {
-		t.Errorf("GetOrInsert did not insert new value in map!!")
-	}
-	if got != expected {
-		t.Errorf("value in map = %d expected = %d", got, expected)
-	}
-
-}
-
-func TestFoldItems(t *testing.T) {
-	type args struct {
-		m       map[int]int
-		initial map[string]string
-		fn      func(map[string]string, int, int) map[string]string
-	}
-	tests := []struct {
-		name string
-		args args
-		want map[string]string
-	}{
-		{
-			"test fold over map items",
-			args{
-				map[int]int{1: 10, 2: 20, 3: 30},
-				make(map[string]string),
-				func(acc map[string]string, k, v int) map[string]string {
-					acc[fmt.Sprintf("entry_%d", k)] = fmt.Sprintf(
-						"%d->%d",
-						k,
-						v,
-					)
-					return acc
-				},
-			},
-			map[string]string{
-				"entry_1": "1->10",
-				"entry_2": "2->20",
-				"entry_3": "3->30",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := FoldItems(tt.args.m, tt.args.initial, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("FoldItems() = %v, expected %v", got, tt.want)
-			}
-		})
-	}
 }
 
 func TestTransformMap(t *testing.T) {
