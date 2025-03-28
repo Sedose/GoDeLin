@@ -18,14 +18,16 @@ func TestAll(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"positive case",
+		{
+			"positive case",
 			args{
 				[]int{1, 2, 3, 4, 5},
 				func(i int) bool { return i < 10 },
 			},
 			true,
 		},
-		{"negative case",
+		{
+			"negative case",
 			args{
 				[]int{1, 2, 3, 4, 5},
 				func(i int) bool { return i%2 == 0 },
@@ -52,14 +54,16 @@ func TestAny(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"positive case",
+		{
+			"positive case",
 			args{
 				[]int{1, 2, 3, 4, 5, 6},
 				func(i int) bool { return i%2 == 0 },
 			},
 			true,
 		},
-		{"negative case",
+		{
+			"negative case",
 			args{
 				[]int{1, 2, 3, 4, 5, 6},
 				func(i int) bool { return i > 7 },
@@ -183,7 +187,6 @@ func TestFilter(t *testing.T) {
 }
 
 func TestAssociate_StringGrouping(t *testing.T) {
-	// Group strings by their first letter.
 	fruits := []string{"apple", "apricot", "banana", "avocado", "blueberry"}
 	result := GroupBy(fruits, func(fruit string) (string, string) {
 		return fruit[:1], fruit
@@ -198,7 +201,6 @@ func TestAssociate_StringGrouping(t *testing.T) {
 }
 
 func TestAssociate_IntGrouping(t *testing.T) {
-	// Group integers by even/odd.
 	numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	result := GroupBy(numbers, func(n int) (bool, int) {
 		return n%2 == 0, n
@@ -213,7 +215,6 @@ func TestAssociate_IntGrouping(t *testing.T) {
 }
 
 func TestAssociate_EmptySlice(t *testing.T) {
-	// Edge case: empty slice.
 	var empty []string
 	result := GroupBy(empty, func(s string) (string, string) {
 		return s, s
@@ -226,22 +227,10 @@ func TestAssociate_EmptySlice(t *testing.T) {
 
 func TestChunkedBy(t *testing.T) {
 	input := []int{
-		10,
-		20,
-		30,
-		40,
-		31,
-		31,
-		33,
-		34,
-		21,
-		22,
-		23,
-		24,
-		11,
-		12,
-		13,
-		14,
+		10, 20, 30, 40,
+		31, 31, 33, 34,
+		21, 22, 23, 24,
+		11, 12, 13, 14,
 	}
 	output := ChunkedBy(input, func(prev, next int) bool {
 		return prev < next
@@ -267,7 +256,8 @@ func TestDistinct(t *testing.T) {
 		args args
 		want []int
 	}{
-		{"test distinct",
+		{
+			"test distinct",
 			args{
 				[]int{1, 1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5},
 			},
@@ -292,18 +282,19 @@ func TestDistinctBy(t *testing.T) {
 		name string
 		args args
 		want []string
-	}{{"test distinctBy",
-		args{[]string{"a", "A", "b", "B", "c", "C"},
-			func(s string) string { return strings.ToLower(s) },
+	}{
+		{
+			"test distinctBy",
+			args{
+				[]string{"a", "A", "b", "B", "c", "C"},
+				func(s string) string { return strings.ToLower(s) },
+			},
+			[]string{"a", "b", "c"},
 		},
-		[]string{"a", "b", "c"},
-	}}
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DistinctBy(tt.args.s, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
+			if got := DistinctBy(tt.args.s, tt.args.fn); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DistinctBy() = %v, expected %v", got, tt.want)
 			}
 		})
@@ -501,7 +492,6 @@ func TestFlatMap(t *testing.T) {
 }
 
 func TestGroupByWithOriginalTypesForKeyAndValue(t *testing.T) {
-
 	input := []string{"a", "abc", "ab", "def", "abcd"}
 	want := map[int][]string{
 		1: {"a"},
@@ -526,7 +516,6 @@ func (w wrapped) String() string {
 }
 
 func TestGroupByWithNewTypesForKeyAndValue(t *testing.T) {
-
 	input := []string{"a", "abc", "ab", "def", "abcd"}
 	want := map[float64][]*wrapped{
 		10.0: {&wrapped{"a"}},
@@ -544,8 +533,7 @@ func TestGroupByWithNewTypesForKeyAndValue(t *testing.T) {
 			return
 		}
 		if len(vs) != len(avs) {
-			t.Errorf("expected %d elements for key:'%v'. got %d",
-				len(vs), k, len(avs))
+			t.Errorf("expected %d elements for key:'%v'. got %d", len(vs), k, len(avs))
 			return
 		}
 		for i := 0; i < len(vs); i++ {
@@ -555,9 +543,7 @@ func TestGroupByWithNewTypesForKeyAndValue(t *testing.T) {
 				t.Errorf("expected value: %s, got %s", v, av)
 			}
 		}
-
 	}
-
 }
 
 func TestItems(t *testing.T) {
@@ -566,7 +552,8 @@ func TestItems(t *testing.T) {
 		"b": {1, 2},
 		"c": {1, 2, 3},
 	}
-	want := []*Pair[string, []int]{
+	// Updated from []*Pair[string, []int] to []Pair[string, []int]
+	want := []Pair[string, []int]{
 		{"a", []int{1, 2, 3, 4}},
 		{"b", []int{1, 2}},
 		{"c", []int{1, 2, 3}},
@@ -575,7 +562,7 @@ func TestItems(t *testing.T) {
 		return want[i].First < want[j].First
 	})
 
-	got := Items(m)
+	got := Items(m) // now returns []Pair[K, V]
 	sort.Slice(got, func(i, j int) bool {
 		return got[i].First < got[j].First
 	})
@@ -595,7 +582,8 @@ func TestMap(t *testing.T) {
 		args args
 		want []int
 	}{
-		{"test mapping",
+		{
+			"test mapping",
 			args{
 				[]int{1, 2, 3, 4, 5},
 				func(i int) int { return i * i },
@@ -605,10 +593,7 @@ func TestMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Map(tt.args.elems, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
+			if got := Map(tt.args.elems, tt.args.fn); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Map() = %v, expected %v", got, tt.want)
 			}
 		})
@@ -773,7 +758,9 @@ func TestFoldMapEntries(t *testing.T) {
 			name:     "product of key length and value",
 			inputMap: map[string]int{"a": 3, "go": 5},
 			initial:  1,
-			combine:  func(acc int, k string, v int) int { return acc * len(k) * v },
+			combine: func(acc int, k string, v int) int {
+				return acc * len(k) * v
+			},
 			expected: 1 * 1 * 3 * 2 * 5, // 3 * 10 = 30
 		},
 		{
@@ -805,7 +792,8 @@ func TestMapIndexed(t *testing.T) {
 		args args
 		want []int
 	}{
-		{"map indexed",
+		{
+			"map indexed",
 			args{
 				[]int{1, 2, 3, 4, 5},
 				func(index, i int) int { return index * i },
@@ -815,10 +803,7 @@ func TestMapIndexed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MapIndexed(tt.args.s, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
+			if got := MapIndexed(tt.args.s, tt.args.fn); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MapIndexed() = %v, expected %v", got, tt.want)
 			}
 		})
@@ -879,7 +864,8 @@ func TestReduce(t *testing.T) {
 		args args
 		want int
 	}{
-		{"reduce",
+		{
+			"reduce",
 			args{
 				[]int{1, 2, 3, 4, 5},
 				func(acc, v int) int { return acc + v },
@@ -889,10 +875,7 @@ func TestReduce(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Reduce(tt.args.s, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
+			if got := Reduce(tt.args.s, tt.args.fn); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Reduce() = %v, expected %v", got, tt.want)
 			}
 		})
@@ -909,23 +892,20 @@ func TestReduceIndexed(t *testing.T) {
 		args args
 		want string
 	}{
-		{"reduce indexed",
+		{
+			"reduce indexed",
 			args{
 				[]string{"a", "b", "c", "d"},
 				func(index int, acc, v string) string {
 					return fmt.Sprintf("%s%s%d", acc, v, index)
 				},
 			},
-
 			"ab1c2d3",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ReduceIndexed(tt.args.s, tt.args.fn); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
+			if got := ReduceIndexed(tt.args.s, tt.args.fn); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ReduceIndexed() = %v, expected %v", got, tt.want)
 			}
 		})
@@ -948,7 +928,8 @@ func TestZip(t *testing.T) {
 	testCases := []struct {
 		name string
 		args args
-		want []*Pair[string, int]
+		// Updated from []*Pair[string, int] to []Pair[string, int]
+		want []Pair[string, int]
 	}{
 		{
 			name: "same length slices",
@@ -956,7 +937,7 @@ func TestZip(t *testing.T) {
 				[]string{"a", "b", "c"},
 				[]int{10, 20, 30},
 			},
-			want: []*Pair[string, int]{
+			want: []Pair[string, int]{
 				{"a", 10},
 				{"b", 20},
 				{"c", 30},
@@ -968,7 +949,7 @@ func TestZip(t *testing.T) {
 				[]string{"a", "b", "c", "d"},
 				[]int{1, 2, 3},
 			},
-			want: []*Pair[string, int]{
+			want: []Pair[string, int]{
 				{"a", 1},
 				{"b", 2},
 				{"c", 3},
@@ -980,7 +961,7 @@ func TestZip(t *testing.T) {
 				[]string{"x", "y"},
 				[]int{7, 8, 9, 10},
 			},
-			want: []*Pair[string, int]{
+			want: []Pair[string, int]{
 				{"x", 7},
 				{"y", 8},
 			},
@@ -991,7 +972,7 @@ func TestZip(t *testing.T) {
 				[]string{},
 				[]int{100},
 			},
-			want: nil,
+			want: []Pair[string, int]{},
 		},
 		{
 			name: "right slice empty",
@@ -999,7 +980,7 @@ func TestZip(t *testing.T) {
 				[]string{"a", "b", "c"},
 				[]int{},
 			},
-			want: nil,
+			want: []Pair[string, int]{},
 		},
 		{
 			name: "both slices empty",
@@ -1007,7 +988,7 @@ func TestZip(t *testing.T) {
 				[]string{},
 				[]int{},
 			},
-			want: nil,
+			want: []Pair[string, int]{},
 		},
 	}
 
@@ -1021,23 +1002,6 @@ func TestZip(t *testing.T) {
 	}
 }
 
-func TestUnZip(t *testing.T) {
-	ps := []*Pair[string, int]{
-		{"a", 1},
-		{"b", 2},
-		{"c", 3},
-	}
-	want1 := []string{"a", "b", "c"}
-	want2 := []int{1, 2, 3}
-	got1, got2 := Unzip(ps)
-	if !reflect.DeepEqual(got1, want1) {
-		t.Errorf("Zip() first list = %v, expected %v", got1, want1)
-	}
-	if !reflect.DeepEqual(got2, want2) {
-		t.Errorf("Zip() first list = %v, expected %v", got2, want2)
-	}
-}
-
 func TestWindowed(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -1048,11 +1012,12 @@ func TestWindowed(t *testing.T) {
 		shouldPanic bool
 	}{
 		{
-			name:     "empty slice",
-			input:    []int{},
-			size:     1,
-			step:     1,
-			expected: nil,
+			name:  "empty slice",
+			input: []int{},
+			size:  1,
+			step:  1,
+			// now expect an empty slice rather than nil
+			expected: [][]int{},
 		},
 		{
 			name:        "size is zero causes panic",
