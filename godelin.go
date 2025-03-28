@@ -294,6 +294,21 @@ func Unzip[T1 any, T2 any](pairList []*Pair[T1, T2]) ([]T1, []T2) {
 	return firstElements, secondElements
 }
 
+func Zip[T1 any, T2 any](firstSlice []T1, secondSlice []T2) []*Pair[T1, T2] {
+	minLen := min(len(firstSlice), len(secondSlice))
+	if minLen == 0 {
+		return nil
+	}
+	result := make([]*Pair[T1, T2], 0, minLen)
+	for index := 0; index < minLen; index++ {
+		result = append(result, &Pair[T1, T2]{
+			First:  firstSlice[index],
+			Second: secondSlice[index],
+		})
+	}
+	return result
+}
+
 func Windowed[T any](s []T, size, step int) [][]T {
 	ret := make([][]T, 0)
 	sz := len(s)
@@ -329,23 +344,6 @@ func Windowed[T any](s []T, size, step int) [][]T {
 		if start == end {
 			break
 		}
-	}
-	return ret
-}
-
-func Zip[T1 any, T2 any](s1 []T1, s2 []T2) []*Pair[T1, T2] {
-	minLen := len(s1)
-	if minLen > len(s2) {
-		minLen = len(s2)
-	}
-
-	ret := make([]*Pair[T1, T2], 0, minLen)
-
-	for i := 0; i < minLen; i++ {
-		ret = append(ret, &Pair[T1, T2]{
-			First:  s1[i],
-			Second: s2[i],
-		})
 	}
 	return ret
 }

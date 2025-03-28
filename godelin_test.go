@@ -1023,16 +1023,83 @@ func TestWindowed(t *testing.T) {
 }
 
 func TestZip(t *testing.T) {
-	s1 := []string{"a", "b", "c", "d"}
-	s2 := []int{1, 2, 3}
-	got := Zip(s1, s2)
-	want := []*Pair[string, int]{
-		{"a", 1},
-		{"b", 2},
-		{"c", 3},
+	type args struct {
+		left  []string
+		right []int
 	}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Zip() = %v, expected %v", got, want)
+	testCases := []struct {
+		name string
+		args args
+		want []*Pair[string, int]
+	}{
+		{
+			name: "same length slices",
+			args: args{
+				[]string{"a", "b", "c"},
+				[]int{10, 20, 30},
+			},
+			want: []*Pair[string, int]{
+				{"a", 10},
+				{"b", 20},
+				{"c", 30},
+			},
+		},
+		{
+			name: "left slice longer",
+			args: args{
+				[]string{"a", "b", "c", "d"},
+				[]int{1, 2, 3},
+			},
+			want: []*Pair[string, int]{
+				{"a", 1},
+				{"b", 2},
+				{"c", 3},
+			},
+		},
+		{
+			name: "right slice longer",
+			args: args{
+				[]string{"x", "y"},
+				[]int{7, 8, 9, 10},
+			},
+			want: []*Pair[string, int]{
+				{"x", 7},
+				{"y", 8},
+			},
+		},
+		{
+			name: "left slice empty",
+			args: args{
+				[]string{},
+				[]int{100},
+			},
+			want: nil,
+		},
+		{
+			name: "right slice empty",
+			args: args{
+				[]string{"a", "b", "c"},
+				[]int{},
+			},
+			want: nil,
+		},
+		{
+			name: "both slices empty",
+			args: args{
+				[]string{},
+				[]int{},
+			},
+			want: nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			got := Zip(testCase.args.left, testCase.args.right)
+			if !reflect.DeepEqual(got, testCase.want) {
+				t.Errorf("Zip() = %v, expected %v", got, testCase.want)
+			}
+		})
 	}
 }
 
