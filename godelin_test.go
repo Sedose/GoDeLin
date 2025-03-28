@@ -940,88 +940,6 @@ func TestTakeWhile(t *testing.T) {
 	}
 }
 
-func TestWindowed(t *testing.T) {
-	type args struct {
-		s    []int
-		size int
-		step int
-	}
-	input := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	tests := []struct {
-		name string
-		args args
-		want [][]int
-	}{
-		{"size = 5, step = 1",
-			args{input, 5, 1},
-			[][]int{
-				{1, 2, 3, 4, 5},
-				{2, 3, 4, 5, 6},
-				{3, 4, 5, 6, 7},
-				{4, 5, 6, 7, 8},
-				{5, 6, 7, 8, 9},
-				{6, 7, 8, 9, 10},
-				{7, 8, 9, 10},
-				{8, 9, 10},
-				{9, 10},
-				{10},
-			},
-		},
-		{"size = 5, step = 3",
-			args{input, 5, 3},
-			[][]int{
-				{1, 2, 3, 4, 5},
-				{4, 5, 6, 7, 8},
-				{7, 8, 9, 10},
-				{10},
-			},
-		},
-		{"size = 3, step = 4",
-			args{input, 3, 4},
-			[][]int{
-				{1, 2, 3},
-				{5, 6, 7},
-				{9, 10},
-			},
-		},
-
-		{"slice smaller than size",
-			args{[]int{1, 2, 3}, 4, 1},
-			[][]int{
-				{1, 2, 3},
-				{2, 3},
-				{3},
-			},
-		},
-		{"slice smaller than size and step",
-			args{[]int{1, 2, 3}, 4, 4},
-			[][]int{
-				{1, 2, 3},
-			},
-		},
-		{"slice larger than size and smaller than step",
-			args{[]int{1, 2, 3}, 2, 4},
-			[][]int{
-				{1, 2},
-			},
-		},
-		{"empty slice",
-			args{[]int{}, 4, 4},
-			[][]int{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Windowed(tt.args.s, tt.args.size, tt.args.step); !reflect.DeepEqual(
-				got,
-				tt.want,
-			) {
-				t.Errorf("Windowed() = %v, expected %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestZip(t *testing.T) {
 	type args struct {
 		left  []string
@@ -1117,6 +1035,88 @@ func TestUnZip(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got2, want2) {
 		t.Errorf("Zip() first list = %v, expected %v", got2, want2)
+	}
+}
+
+func TestWindowed(t *testing.T) {
+	testCases := []struct {
+		name        string
+		input       []int
+		size        int
+		step        int
+		expected    [][]int
+		shouldPanic bool
+	}{
+		{
+			name:     "empty slice",
+			input:    []int{},
+			size:     1,
+			step:     1,
+			expected: nil,
+		},
+		{
+			name:        "size is zero causes panic",
+			input:       []int{1, 2, 3},
+			size:        0,
+			step:        1,
+			shouldPanic: true,
+		},
+		{
+			name:        "step is zero causes panic",
+			input:       []int{1, 2, 3},
+			size:        1,
+			step:        0,
+			shouldPanic: true,
+		},
+		{
+			name:     "basic window size=2 step=2",
+			input:    []int{1, 2, 3, 4, 5},
+			size:     2,
+			step:     2,
+			expected: [][]int{{1, 2}, {3, 4}, {5}},
+		},
+		{
+			name:  "overlapping windows size=2 step=1",
+			input: []int{1, 2, 3, 4},
+			size:  2,
+			step:  1,
+			expected: [][]int{
+				{1, 2},
+				{2, 3},
+				{3, 4},
+				{4},
+			},
+		},
+		{
+			name:  "size=3 step=1 with partial last window",
+			input: []int{1, 2, 3, 4, 5},
+			size:  3,
+			step:  1,
+			expected: [][]int{
+				{1, 2, 3},
+				{2, 3, 4},
+				{3, 4, 5},
+				{4, 5},
+				{5},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.shouldPanic {
+				defer func() {
+					if r := recover(); r == nil {
+						t.Errorf("expected a panic but did not get one")
+					}
+				}()
+			}
+
+			result := Windowed(tc.input, tc.size, tc.step)
+			if !reflect.DeepEqual(result, tc.expected) && !tc.shouldPanic {
+				t.Errorf("Windowed() = %v, expected %v", result, tc.expected)
+			}
+		})
 	}
 }
 

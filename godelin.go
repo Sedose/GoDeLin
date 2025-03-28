@@ -309,43 +309,24 @@ func Zip[T1 any, T2 any](firstSlice []T1, secondSlice []T2) []*Pair[T1, T2] {
 	return result
 }
 
-func Windowed[T any](s []T, size, step int) [][]T {
-	ret := make([][]T, 0)
-	sz := len(s)
-	if sz == 0 {
-		return ret
+func Windowed[T any](input []T, size, step int) [][]T {
+	if len(input) == 0 {
+		return nil
 	}
-	start := 0
-	end := 0
-	updateEnd := func() {
-		e := start + size
-		if e >= sz {
-			e = sz
-		}
-		end = e
+	if size <= 0 || step <= 0 {
+		panic("Windowed: size and step must be positive")
 	}
-	updateStart := func() {
-		s := start + step
-		if s >= sz {
-			s = sz
+	result := make([][]T, 0, (len(input)+step-1)/step)
+	for index := 0; index < len(input); index += step {
+		end := index + size
+		if end > len(input) {
+			end = len(input)
 		}
-		start = s
+		window := make([]T, end-index)
+		copy(window, input[index:end])
+		result = append(result, window)
 	}
-	updateEnd()
-
-	for {
-		sub := make([]T, 0, end)
-		for i := start; i < end; i++ {
-			sub = append(sub, s[i])
-		}
-		ret = append(ret, sub)
-		updateStart()
-		updateEnd()
-		if start == end {
-			break
-		}
-	}
-	return ret
+	return result
 }
 
 type Pair[F, S any] struct {
