@@ -270,29 +270,28 @@ func TakeWhile[T any](inputSlice []T, predicate func(T) bool) []T {
 	return inputSlice[:index]
 }
 
-func TransformMap[M ~map[K]V, K comparable, V any](
-	m M,
-	fn func(k K, v V) (K, V, bool),
+func MapEntries[M ~map[K]V, K comparable, V any](
+	inputMap M,
+	transform func(K, V) (K, V, bool),
 ) M {
-	ret := make(map[K]V)
-	for k, v := range m {
-		newK, newV, include := fn(k, v)
+	result := make(map[K]V)
+	for key, value := range inputMap {
+		newKey, newValue, include := transform(key, value)
 		if include {
-			ret[newK] = newV
+			result[newKey] = newValue
 		}
 	}
-	return ret
+	return result
 }
 
-func Unzip[T1 any, T2 any](ps []*Pair[T1, T2]) ([]T1, []T2) {
-	l := len(ps)
-	s1 := make([]T1, 0, l)
-	s2 := make([]T2, 0, l)
-	for _, p := range ps {
-		s1 = append(s1, p.First)
-		s2 = append(s2, p.Second)
+func Unzip[T1 any, T2 any](pairList []*Pair[T1, T2]) ([]T1, []T2) {
+	firstElements := make([]T1, 0, len(pairList))
+	secondElements := make([]T2, 0, len(pairList))
+	for _, pair := range pairList {
+		firstElements = append(firstElements, pair.First)
+		secondElements = append(secondElements, pair.Second)
 	}
-	return s1, s2
+	return firstElements, secondElements
 }
 
 func Windowed[T any](s []T, size, step int) [][]T {
