@@ -10,13 +10,13 @@ import (
 
 func TestAll(t *testing.T) {
 	type args struct {
-		elems []int
-		fn    func(int) bool
+		inputSlice []int
+		predicate  func(int) bool
 	}
-	tests := []struct {
-		name string
-		args args
-		want bool
+	testCases := []struct {
+		name     string
+		args     args
+		expected bool
 	}{
 		{
 			"positive case",
@@ -35,10 +35,10 @@ func TestAll(t *testing.T) {
 			false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := All(tt.args.elems, tt.args.fn); got != tt.want {
-				t.Errorf("All() = %v, expected %v", got, tt.want)
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if actual := All(testCase.args.inputSlice, testCase.args.predicate); actual != testCase.expected {
+				t.Errorf("All() = %v, expected %v", actual, testCase.expected)
 			}
 		})
 	}
