@@ -43,7 +43,7 @@ func GroupBy[T any, K comparable, V any](slice []T, transform func(T) (K, V)) ma
 
 func ChunkedBy[T any](slice []T, groupingFn func(T, T) bool) [][]T {
 	if len(slice) == 0 {
-		return [][][]T{{}}[0] // return an empty slice, not nil
+		return [][]T{} // return an empty slice, not nil
 	}
 	estimated := len(slice) / 2
 	result := make([][]T, 0, estimated)
@@ -311,7 +311,7 @@ func Zip[T1, T2 any](first []T1, second []T2) []Pair[T1, T2] {
 
 func Windowed[T any](slice []T, size, step int) [][]T {
 	if len(slice) == 0 {
-		return [][][]T{{}}[0]
+		return [][]T{}
 	}
 	if size <= 0 || step <= 0 {
 		panic("Windowed: size and step must be positive")
