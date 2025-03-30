@@ -920,6 +920,132 @@ func TestTakeWhile(t *testing.T) {
 	}
 }
 
+func TestMapEntries(t *testing.T) {
+	type args struct {
+		inputMap  map[string]int
+		transform func(string, int) (string, int)
+	}
+	testCases := []struct {
+		name     string
+		args     args
+		expected map[string]int
+	}{
+		{
+			name: "rename keys and double values",
+			args: args{
+				inputMap: map[string]int{"a": 1, "b": 2},
+				transform: func(k string, v int) (string, int) {
+					return k + "_x", v * 2
+				},
+			},
+			expected: map[string]int{"a_x": 2, "b_x": 4},
+		},
+		{
+			name: "identity transformation",
+			args: args{
+				inputMap: map[string]int{"m": 3, "n": 4},
+				transform: func(k string, v int) (string, int) {
+					return k, v
+				},
+			},
+			expected: map[string]int{"m": 3, "n": 4},
+		},
+		{
+			name: "key squash",
+			args: args{
+				inputMap: map[string]int{"x": 10, "y": 20},
+				transform: func(k string, v int) (string, int) {
+					return "z", v
+				},
+			},
+			expected: map[string]int{"z": 20}, // last one wins
+		},
+		{
+			name: "empty input map",
+			args: args{
+				inputMap: map[string]int{},
+				transform: func(k string, v int) (string, int) {
+					return k, v
+				},
+			},
+			expected: map[string]int{},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := MapEntries(testCase.args.inputMap, testCase.args.transform)
+			if !reflect.DeepEqual(actual, testCase.expected) {
+				t.Errorf("MapEntries() = %v, expected %v", actual, testCase.expected)
+			}
+		})
+	}
+}
+
+func TestUnzip(t *testing.T) {
+	type args struct {
+		pairs []Pair[string, int]
+	}
+	testCases := []struct {
+		name       string
+		args       args
+		wantFirst  []string
+		wantSecond []int
+	}{
+		{
+			name: "multiple pairs",
+			args: args{
+				pairs: []Pair[string, int]{
+					{"a", 10},
+					{"b", 20},
+					{"c", 30},
+				},
+			},
+			wantFirst:  []string{"a", "b", "c"},
+			wantSecond: []int{10, 20, 30},
+		},
+		{
+			name:       "empty slice",
+			args:       args{pairs: []Pair[string, int]{}},
+			wantFirst:  []string{},
+			wantSecond: []int{},
+		},
+		{
+			name: "single pair",
+			args: args{
+				pairs: []Pair[string, int]{
+					{"x", 99},
+				},
+			},
+			wantFirst:  []string{"x"},
+			wantSecond: []int{99},
+		},
+		{
+			name: "repeated values",
+			args: args{
+				pairs: []Pair[string, int]{
+					{"z", 1},
+					{"z", 1},
+				},
+			},
+			wantFirst:  []string{"z", "z"},
+			wantSecond: []int{1, 1},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			gotFirst, gotSecond := Unzip(testCase.args.pairs)
+			if !reflect.DeepEqual(gotFirst, testCase.wantFirst) {
+				t.Errorf("Unzip() firsts = %v, expected %v", gotFirst, testCase.wantFirst)
+			}
+			if !reflect.DeepEqual(gotSecond, testCase.wantSecond) {
+				t.Errorf("Unzip() seconds = %v, expected %v", gotSecond, testCase.wantSecond)
+			}
+		})
+	}
+}
+
 func TestZip(t *testing.T) {
 	type args struct {
 		left  []string
@@ -928,7 +1054,6 @@ func TestZip(t *testing.T) {
 	testCases := []struct {
 		name string
 		args args
-		// Updated from []*Pair[string, int] to []Pair[string, int]
 		want []Pair[string, int]
 	}{
 		{

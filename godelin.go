@@ -272,14 +272,12 @@ func TakeWhile[T any](slice []T, predicate func(T) bool) []T {
 
 func MapEntries[M ~map[K]V, K comparable, V any](
 	m M,
-	transform func(K, V) (K, V, bool),
+	transform func(K, V) (K, V),
 ) M {
 	result := make(M)
 	for key, value := range m {
-		newKey, newValue, keep := transform(key, value)
-		if keep {
-			result[newKey] = newValue
-		}
+		newKey, newValue := transform(key, value)
+		result[newKey] = newValue
 	}
 	return result
 }
