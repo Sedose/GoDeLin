@@ -2,6 +2,9 @@
 
 ![image](https://github.com/user-attachments/assets/faf33897-e11a-4727-805d-8e2905799131)
 
+### You might prefer such solid alternatives
+- https://github.com/samber/lo
+
 ### Bringing Kotlin's std lib expressiveness to Go
 
 - GoDeLin is a Go library inspired by Kotlin standard library.
